@@ -19,7 +19,7 @@ By default Columbus returns only the subdomain in a JSON syring array:
 curl 'https://columbus.elmasy.com/lookup/github.com'
 ```
 
-This saves us some sumputation power, and makes it your responsibility to assemble the hostnames.
+This saves us some com putation power, and makes it your responsibility to assemble the hostnames.
 
 But if you want the full hostnames, include the `full` parameter.
 ```bash
@@ -51,11 +51,11 @@ Create a new user:
 adduser --system --no-create-home --disabled-login columbus
 ```
 
-Copy the binary to `/usr/bin/columbus`.
+Copy the binary to `/usr/bin/columbus-server`.
 
 Make it executable:
 ```bash
-chmod +x /usr/bin/columbus
+chmod +x /usr/bin/columbus-server
 ```
 
 Create a directory:
@@ -99,4 +99,4 @@ systemctl enable columbus-server
 
 - [ ] Actively collect subdomains of the most used domains with external tools.
 - [ ] UI
-    - The current CORS settings allow embed into every site!
+    - The current CORS settings allow to embed into every site!
