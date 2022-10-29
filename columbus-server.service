@@ -1,0 +1,10 @@
+[Unit]
+Description=Columbus Server
+After=mongod.service
+
+[Service]
+User=columbus
+ExecStart=/usr/bin/columbus-server /etc/columbus/columbus.conf
+
+[Install]
+WantedBy=basic.target
