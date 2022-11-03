@@ -13,10 +13,10 @@ import (
 )
 
 type Stat struct {
-	Date      int64      `json:"date"`
-	DomainNum int64      `json:"domain"`
-	SubNum    int64      `json:"sub"`
-	m         sync.Mutex `json:"-"`
+	Date      int64
+	DomainNum int64
+	SubNum    int64
+	m         sync.Mutex
 }
 
 var (
@@ -34,12 +34,28 @@ func (s *Stat) Update(DomainNum int64, SubNum int64) {
 	s.SubNum = SubNum
 }
 
-func (s *Stat) Copy() Stat {
+func (s *Stat) GetDate() int64 {
 
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return Stat{Date: s.Date, DomainNum: s.DomainNum, SubNum: s.SubNum}
+	return s.Date
+}
+
+func (s *Stat) GetDomainNum() int64 {
+
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	return s.DomainNum
+}
+
+func (s *Stat) GetSubNum() int64 {
+
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	return s.SubNum
 }
 
 // UpdateStat is created to run a goroutine.
@@ -77,5 +93,12 @@ func StatGet(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, Current.Copy())
+	if Current.GetDate() == 0 && Current.GetDomainNum() == 0 && Current.GetSubNum() == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	// Return a copy only.
+	// This was the easiest way to control the write (update) / read process with the mutex.
+	c.JSON(http.StatusOK, gin.H{"date": Current.GetDate(), "domain": Current.GetDomainNum(), "sub": Current.GetSubNum()})
 }
