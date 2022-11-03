@@ -482,6 +482,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Stat'
+        '204':
+          description: The background process is started recently and currently cant give useful information. Try again later.
         '403':
           description: Blocked IP.
           content:
