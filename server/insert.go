@@ -26,7 +26,7 @@ func InsertPut(c *gin.Context) {
 		return
 	}
 
-	_, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	_, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int

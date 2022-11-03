@@ -107,12 +107,12 @@ func UserCreate(name string, admin bool) (sdk.User, error) {
 	return user, err
 }
 
-// UserGet returns the user from the db based on API key.
+// UserGetKey returns the user from the db based on API key.
 //
 // If user not found, returns ErrUserNotFound error.
 //
 // If key is empty, returns ErrUserKeyEmpty error.
-func UserGet(key string) (sdk.User, error) {
+func UserGetKey(key string) (sdk.User, error) {
 
 	if key == "" {
 		return sdk.User{}, ErrUserKeyEmpty
@@ -133,7 +133,36 @@ func UserGet(key string) (sdk.User, error) {
 		return u, fmt.Errorf("failed to decode result: %w", err)
 	}
 
-	return u, err
+	return u, nil
+}
+
+// UserGetName returns the user from the db based on name.
+//
+// If user not found, returns ErrUserNotFound error.
+//
+// If name is empty, returns ErrUserNameEmpty error.
+func UserGetName(name string) (sdk.User, error) {
+
+	if name == "" {
+		return sdk.User{}, ErrUserNameEmpty
+	}
+
+	var u sdk.User
+
+	r := Users.FindOne(context.TODO(), bson.M{"name": name})
+	if r.Err() != nil {
+		if errors.Is(r.Err(), mongo.ErrNoDocuments) {
+			return u, ErrUserNotFound
+		}
+		return u, fmt.Errorf("failed to find name: %w", r.Err())
+	}
+
+	err := r.Decode(&u)
+	if err != nil {
+		return u, fmt.Errorf("failed to decode result: %w", err)
+	}
+
+	return u, nil
 }
 
 // UserDelete delete user based on key+name.
