@@ -19,7 +19,7 @@ By default Columbus returns only the subdomain in a JSON syring array:
 curl 'https://columbus.elmasy.com/lookup/github.com'
 ```
 
-This saves us some com putation power, and makes it your responsibility to assemble the hostnames.
+This saves us some computation power, and makes it your responsibility to assemble the hostnames (if you want).
 
 But if you want the full hostnames, include the `full` parameter.
 ```bash
@@ -35,6 +35,12 @@ done
 ```
 
 **For more, see the [OpenAPI specification](https://columbus.elmasy.com/openapi.yaml)**
+
+## Entries
+
+Currently, entries are got from [Certificate Transparency](https://certificate.transparency.dev/).
+
+Check the currently parsed CT logs [here](https://status.elmasy.com/status/4803b934327a1168b515).
 
 ## Build
 
