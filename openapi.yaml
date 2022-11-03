@@ -26,6 +26,8 @@ tags:
     description: User operations.
   - name: admin
     description: Admin operations.
+  - name: info
+    description: Server informations.
 
 paths:
   /lookup/{domain}:
@@ -357,9 +359,18 @@ paths:
     patch:
       tags:
         - admin
-      summary: "*TODO* Update other user settings"
-      description: Admin can update other user's settings.
+      summary: Update other user settings"
+      description: |
+        Admin can update other user's settings.
+        
+        User can update one setting at a time.
       parameters:
+        - name: username
+          description: Naem of the user to configure
+          in: query
+          required: true
+          schema:
+            type: string
         - name: key
           description: Set this parameter to `true` to get a new key
           in: query
@@ -380,20 +391,6 @@ paths:
           required: false
           schema:
             type: boolean
-      requestBody:
-        description: |
-          The user object that you want to update.
-          
-          Users can update only self, so the body `key` and the `X-Api-Key` must match.
-          Users can update only the `key` and the `name` fields.
-          
-          Admins can send any user object (the *target user*) and can update any field (as long as the user exist).
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-        
       responses:
         '200':
           description: Success.
@@ -417,6 +414,8 @@ paths:
           description: Client IP is blocked
         '404':
           description: Target user not exist
+        '409':
+          description: Name is taken.
         '500':
           description: Internal Server Error
           content:
@@ -465,6 +464,30 @@ paths:
           description: Bad Gateway. Upstream failed.
         '504':
           description: Gateway Timeout. Upstream response takes too long.
+  
+  /stat:
+    get:
+      tags:
+        - info
+      summary: Basic domain statistic
+      description: |
+        Basic domain statistic that holds the total number of domains and
+        the total number of subdomains across domains.
+        
+        The `date` field is in Unix time format.
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stat'
+        '403':
+          description: Blocked IP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         
 
 
@@ -495,6 +518,18 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/User'
+    Stat:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Time is in Unix time format
+        domain:
+          type: integer
+          description: Total number of domains
+        sub:
+          type: integer
+          description: Total nombure of subdomains across domains.
 
   securitySchemes:
     x-api-key:
