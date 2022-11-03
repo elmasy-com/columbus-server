@@ -38,6 +38,7 @@ func Run() error {
 	router.DELETE("/user", UserDelete)
 	router.PATCH("/user", UserPatch)
 	router.GET("/users", UsersGet)
+	router.PATCH("user/other", UserOtherPatch)
 
 	srv := &http.Server{
 		Addr:    config.Address,

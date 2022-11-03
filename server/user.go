@@ -1,13 +1,10 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 
-	sdk "github.com/elmasy-com/columbus-sdk"
 	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/elmasy-com/columbus-server/db"
 	"github.com/gin-gonic/gin"
@@ -25,7 +22,7 @@ func UserGet(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int
@@ -72,7 +69,7 @@ func UserPut(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int
@@ -170,7 +167,7 @@ func UserDelete(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int
@@ -237,7 +234,7 @@ func UserPatch(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int
@@ -342,7 +339,7 @@ func UserOtherPatch(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int
@@ -377,48 +374,29 @@ func UserOtherPatch(c *gin.Context) {
 
 		return
 	}
+
 	if !user.Admin {
 
 		blacklist.Block(c.ClientIP())
 
-		err := fmt.Errorf("user must be admin")
+		err := fmt.Errorf("not admin")
 		c.Error(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
 
-	out, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		err = fmt.Errorf("failed to read body: %w", err)
-		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if len(out) == 0 {
-		err = fmt.Errorf("missing request body")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	userTarget := sdk.User{}
-
-	err = json.Unmarshal(out, &userTarget)
+	target, err := db.UserGetName(c.Query("username"))
 	if err != nil {
 
-		var code int
-		var err error
+		code := 0
 
-		switch err.(type) {
-		case *json.SyntaxError:
+		switch {
+		case errors.Is(err, db.ErrUserNotFound):
+			code = http.StatusNotFound
+		case errors.Is(err, db.ErrUserNameEmpty):
 			code = http.StatusBadRequest
-			err = fmt.Errorf("syntax error: %w", err)
-		case *json.UnmarshalTypeError:
-			code = http.StatusBadRequest
-			err = fmt.Errorf("type error: %w", err)
+			err = fmt.Errorf("username is empty")
 		default:
 			code = http.StatusInternalServerError
-			err = fmt.Errorf("unmarshal error: %w", err)
 		}
 
 		c.Error(err)
@@ -426,90 +404,103 @@ func UserOtherPatch(c *gin.Context) {
 		return
 	}
 
-	if !user.Admin && user.Key != userTarget.Key {
-		// Prevent to non admi user modify other user
-
-		blacklist.Block(c.ClientIP())
-
-		err := fmt.Errorf("only admins can modify other users")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if userTarget.Key == "" {
-		err := fmt.Errorf("body key is empty")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if userTarget.Name == "" {
-		err := fmt.Errorf("body name is empty")
+	key := c.Query("key")
+	if key != "" && key != "true" && key != "false" {
+		err := fmt.Errorf("invalid value for key: %s", key)
 		c.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	target, err := db.UserGet(userTarget.Key)
-	if err != nil {
-		if errors.Is(err, db.ErrUserNotFound) {
+	name := c.Query("name")
+	if name != "" {
 
-			err = fmt.Errorf("target user not exist")
+		if key != "" {
+			err := fmt.Errorf("one update at a time")
 			c.Error(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		if target.Name == name {
+			err := fmt.Errorf("same name")
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		taken, err := db.IsNameTaken(name)
+		if err != nil {
+			err = fmt.Errorf("failed to check if name is taken: %w", err)
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		} else if taken {
+			err = fmt.Errorf("name is taken")
+			c.Error(err)
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
 	}
-	if userTarget.Name != target.Name {
-		err := fmt.Errorf("target name is not match with the key")
+
+	adminBool := false
+
+	admin := c.Query("admin")
+	if admin != "" {
+
+		switch admin {
+		case "true":
+			adminBool = true
+		case "false":
+			adminBool = false
+		default:
+			err := fmt.Errorf("invalid value for admin: %s", admin)
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if key != "" || name != "" {
+			err := fmt.Errorf("one update at a time")
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	switch {
+	case key == "true":
+		err := db.UserChangeKey(&target)
+		if err != nil {
+			err = fmt.Errorf("failed to change key: %w", err)
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	case name != "":
+		err := db.UserChangeName(&target, name)
+		if err != nil {
+			err = fmt.Errorf("failed to change name: %w", err)
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	case admin != "":
+		err := db.UserChangeAdmin(&target, adminBool)
+		if err != nil {
+			err = fmt.Errorf("failed to change admin: %w", err)
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	default:
+		err := fmt.Errorf("nothing to do")
 		c.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Need key update?
-	upKey := c.DefaultQuery("key", "false")
-	if upKey != "true" && upKey != "false" {
-		err := fmt.Errorf("invalid value for parameter key: %s", upKey)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Need name update?
-	upName := c.DefaultQuery("name", "")
-
-	// Need admin update?
-	upAdmin := c.Query("admin")
-	if upAdmin != "" && !user.Admin {
-		// Prevent user to set admin field to self and to other user
-
-		blacklist.Block(c.ClientIP())
-
-		err := fmt.Errorf("only admins can modify admin field")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if upAdmin != "true" && upAdmin != "false" {
-		err := fmt.Errorf("invalid value for parameter admin: %s", upAdmin)
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if upKey == "" && upName == "" && upAdmin == "" {
-
-	}
-
-	// if upKey == "true" {
-	// 	err := db.UserChangeKey(&target)
-	// 	if err != nil {
-	// 		err := fmt.Errorf()
-	// 	}
-	// }
+	c.JSON(http.StatusOK, target)
 }
 
 func UsersGet(c *gin.Context) {
@@ -522,7 +513,7 @@ func UsersGet(c *gin.Context) {
 		return
 	}
 
-	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
 	if err != nil {
 
 		var code int
