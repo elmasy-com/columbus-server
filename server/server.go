@@ -40,6 +40,8 @@ func Run() error {
 	router.GET("/users", UsersGet)
 	router.PATCH("user/other", UserOtherPatch)
 
+	router.GET("/stat", StatGet)
+
 	srv := &http.Server{
 		Addr:    config.Address,
 		Handler: router,
