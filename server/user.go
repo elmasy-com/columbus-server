@@ -511,3 +511,65 @@ func UserOtherPatch(c *gin.Context) {
 	// 	}
 	// }
 }
+
+func UsersGet(c *gin.Context) {
+
+	// Allow any origin
+	c.Header("Access-Control-Allow-Origin", "*")
+
+	if blacklist.IsBlocked(c.ClientIP()) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		return
+	}
+
+	user, err := db.UserGet(c.GetHeader("X-Api-Key"))
+	if err != nil {
+
+		var code int
+
+		switch {
+		case errors.Is(err, db.ErrUserKeyEmpty):
+			// X-Api-Key header is missing
+			code = http.StatusUnauthorized
+			err = fmt.Errorf("missing X-Api-Key")
+
+		case errors.Is(err, db.ErrUserNotFound):
+			// X-Api-Key is invalid
+			code = http.StatusUnauthorized
+			err = fmt.Errorf("invalid X-Api-Key")
+
+			blacklist.Block(c.ClientIP())
+
+		default:
+			// Server error while trying to get user
+			code = http.StatusInternalServerError
+			err = fmt.Errorf("failed to get user: %w", err)
+		}
+
+		c.Error(err)
+		c.JSON(code, gin.H{"error": err.Error()})
+
+		return
+	}
+
+	if !user.Admin {
+
+		blacklist.Block(c.ClientIP())
+
+		err := fmt.Errorf("not admin")
+		c.Error(err)
+
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		return
+	}
+
+	users, err := db.UserList()
+	if err != nil {
+		err = fmt.Errorf("failed to get users: %w", err)
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
