@@ -1,6 +1,6 @@
 LDFLAGS = -s
 LDFLAGS += -w
-LDFLAGS += -X 'main.Commit=$(shell git tag)'
+LDFLAGS += -X 'main.Version=$(shell git tag)'
 LDFLAGS += -X 'main.Commit=$(shell git rev-list -1 HEAD)'
 
 build:
