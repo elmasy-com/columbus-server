@@ -80,6 +80,10 @@ paths:
                 $ref: '#/components/schemas/String'
         '403':
           description: Client IP is blocked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Domain not found.
           content:
@@ -139,7 +143,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/String'
         '403':
-          description: Client IP is blocked
+          description: Client IP is blocked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
         '500':
           description: Internal Server Error
           content:
@@ -180,6 +191,10 @@ paths:
                 $ref: '#/components/schemas/Error'
         '403':
           description: Client IP is blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal Server Error
           content:
@@ -247,6 +262,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
       security:
         - x-api-key: []
     delete:
