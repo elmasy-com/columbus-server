@@ -10,11 +10,22 @@ import (
 	"github.com/elmasy-com/columbus-server/server"
 )
 
+var (
+	Version string
+	Commit  string
+)
+
 func main() {
 
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "Path to config file is missing!\n")
 		fmt.Printf("Usage: %s <path-to-config>\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	if os.Args[1] == "version" {
+		fmt.Printf("Version: %s\n", Version)
+		fmt.Printf("Git Commit: %s\n", Commit)
 		os.Exit(1)
 	}
 

@@ -1,6 +1,11 @@
+LDFLAGS = -s
+LDFLAGS += -w
+LDFLAGS += -X 'main.Commit=$(shell git tag)'
+LDFLAGS += -X 'main.Commit=$(shell git rev-list -1 HEAD)'
+
 build:
 	cp openapi.yaml server/
-	go build -o columbus-server -ldflags="-s -w" .
+	go build -o columbus-server -ldflags="$(LDFLAGS)" .
 	rm server/openapi.yaml
 
 build-dev:
