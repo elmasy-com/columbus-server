@@ -70,7 +70,7 @@ func InsertPut(c *gin.Context) {
 		respCode := 0
 
 		switch {
-		case strings.Contains(err.Error(), "invalid domain"):
+		case errors.Is(err, db.ErrInvalidDomain):
 			respCode = http.StatusBadRequest
 		case strings.Contains(err.Error(), "cannot derive eTLD+1 for domain"):
 			respCode = http.StatusBadRequest

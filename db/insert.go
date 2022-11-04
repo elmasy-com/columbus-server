@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,13 +11,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var (
+	ErrInvalidDomain = errors.New("invalid domain")
+)
+
 // Insert insert the given domain d to the database.
 // Firstly, checks if d is valid. Then split into sub|domain parts.
 // Sharding means, if the document is reached the 16MB limit increase the "shard" field by one.
+//
+// If domain is invalid, returns ErrInvalidDomain.
 func Insert(d string) error {
 
 	if !domain.IsValid(d) {
-		return fmt.Errorf("invalid domain")
+		return ErrInvalidDomain
 	}
 
 	d = strings.ToLower(d)
