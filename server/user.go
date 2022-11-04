@@ -365,12 +365,7 @@ func UserOtherPatch(c *gin.Context) {
 		}
 
 		c.Error(err)
-
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(code, err.Error())
-		} else {
-			c.JSON(code, gin.H{"error": err.Error()})
-		}
+		c.JSON(code, gin.H{"error": err.Error()})
 
 		return
 	}

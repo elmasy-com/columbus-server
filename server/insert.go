@@ -64,19 +64,20 @@ func InsertPut(c *gin.Context) {
 
 	err = db.Insert(c.Param("domain"))
 	if err != nil {
-		err = fmt.Errorf("failed to insert %s: %s", c.Param("domain"), err)
-		c.Error(err)
 
 		respCode := 0
 
 		switch {
 		case errors.Is(err, db.ErrInvalidDomain):
 			respCode = http.StatusBadRequest
+			err = db.ErrInvalidDomain
 		case strings.Contains(err.Error(), "cannot derive eTLD+1 for domain"):
 			respCode = http.StatusBadRequest
 		default:
 			respCode = http.StatusInternalServerError
 		}
+
+		c.Error(err)
 
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(respCode, err.Error())

@@ -63,7 +63,6 @@ func LookupGet(c *gin.Context) {
 
 	subs, err := db.Lookup(d, full)
 	if err != nil {
-		err = fmt.Errorf("lookup failed: %w", err)
 		c.Error(err)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusInternalServerError, err.Error())
