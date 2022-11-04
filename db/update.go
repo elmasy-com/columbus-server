@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	sdk "github.com/elmasy-com/columbus-sdk"
 	"github.com/elmasy-com/elnet/domain"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -20,7 +19,7 @@ func Update() error {
 		return fmt.Errorf("find({}) failed: %s", err)
 	}
 
-	var d sdk.Domain
+	var d Domain
 
 	for cursor.Next(context.TODO()) {
 
@@ -37,7 +36,7 @@ func Update() error {
 
 		fmt.Printf("%s is not a valid domain, resolving...\n", d.Domain)
 
-		l := d.GetList()
+		l := d.GetFull()
 
 		for i := range l {
 			if err = Insert(l[i]); err != nil {

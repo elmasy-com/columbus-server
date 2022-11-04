@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/elmasy-com/columbus-sdk"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -20,7 +19,7 @@ func Lookup(d string, full bool) ([]string, error) {
 	}
 	defer cursor.Close(context.TODO())
 
-	var r sdk.Domain
+	var r Domain
 	var subs []string
 
 	for cursor.Next(context.TODO()) {
@@ -31,7 +30,7 @@ func Lookup(d string, full bool) ([]string, error) {
 		}
 
 		if full {
-			subs = append(subs, r.GetList()...)
+			subs = append(subs, r.GetFull()...)
 		} else {
 			subs = append(subs, r.Subs...)
 		}

@@ -9,7 +9,6 @@ import (
 	mrand "math/rand"
 	"time"
 
-	sdk "github.com/elmasy-com/columbus-sdk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -79,24 +78,24 @@ func genAPIKey() (string, error) {
 // The API key automatically generated.
 // If admin is true, the new user will be an admin.
 // If user name is already taken returns ErrUserNameTaken error.
-func UserCreate(name string, admin bool) (sdk.User, error) {
+func UserCreate(name string, admin bool) (User, error) {
 
 	if name == "" {
-		return sdk.User{}, ErrUserNameEmpty
+		return User{}, ErrUserNameEmpty
 	}
 
 	if taken, err := IsNameTaken(name); err != nil {
-		return sdk.User{}, fmt.Errorf("failed to check user name: %w", err)
+		return User{}, fmt.Errorf("failed to check user name: %w", err)
 	} else if taken {
-		return sdk.User{}, ErrUserNameTaken
+		return User{}, ErrUserNameTaken
 	}
 
 	key, err := genAPIKey()
 	if err != nil {
-		return sdk.User{}, fmt.Errorf("failed to generate key: %w", err)
+		return User{}, fmt.Errorf("failed to generate key: %w", err)
 	}
 
-	user := sdk.User{
+	user := User{
 		Key:   key,
 		Name:  name,
 		Admin: admin,
@@ -112,13 +111,13 @@ func UserCreate(name string, admin bool) (sdk.User, error) {
 // If user not found, returns ErrUserNotFound error.
 //
 // If key is empty, returns ErrUserKeyEmpty error.
-func UserGetKey(key string) (sdk.User, error) {
+func UserGetKey(key string) (User, error) {
 
 	if key == "" {
-		return sdk.User{}, ErrUserKeyEmpty
+		return User{}, ErrUserKeyEmpty
 	}
 
-	var u sdk.User
+	var u User
 
 	r := Users.FindOne(context.TODO(), bson.M{"key": key})
 	if r.Err() != nil {
@@ -141,13 +140,13 @@ func UserGetKey(key string) (sdk.User, error) {
 // If user not found, returns ErrUserNotFound error.
 //
 // If name is empty, returns ErrUserNameEmpty error.
-func UserGetName(name string) (sdk.User, error) {
+func UserGetName(name string) (User, error) {
 
 	if name == "" {
-		return sdk.User{}, ErrUserNameEmpty
+		return User{}, ErrUserNameEmpty
 	}
 
-	var u sdk.User
+	var u User
 
 	r := Users.FindOne(context.TODO(), bson.M{"name": name})
 	if r.Err() != nil {
@@ -198,7 +197,7 @@ func UserDelete(key, name string) error {
 // If user nil, returns ErrUserNil.
 //
 // If key/name is empty, returns ErrUserKeyEmpty/ErrUserNameEmpty.
-func UserChangeKey(user *sdk.User) error {
+func UserChangeKey(user *User) error {
 
 	if user == nil {
 		return ErrUserNil
@@ -235,7 +234,7 @@ func UserChangeKey(user *sdk.User) error {
 // If key/name is empty, returns ErrUserKeyEmpty/ErrUserNameEmpty.
 //
 // If username is taken, returns ErrUserNameTaken.
-func UserChangeName(user *sdk.User, newName string) error {
+func UserChangeName(user *User, newName string) error {
 
 	if user == nil {
 		return ErrUserNil
@@ -269,7 +268,7 @@ func UserChangeName(user *sdk.User, newName string) error {
 // UserChangeAdmin update the admin field for the given user, and change the admin value in user.
 // If key is empty, returns ErrUserKeyEmpty.
 // If name is empty, returns ErrUserNameEmpty.
-func UserChangeAdmin(user *sdk.User, newValue bool) error {
+func UserChangeAdmin(user *User, newValue bool) error {
 
 	if user == nil {
 		return ErrUserNil
@@ -295,18 +294,18 @@ func UserChangeAdmin(user *sdk.User, newValue bool) error {
 }
 
 // UserList returns a list of every users.
-func UserList() ([]sdk.User, error) {
+func UserList() ([]User, error) {
 
 	cursor, err := Users.Find(context.TODO(), bson.M{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find users: %w", err)
 	}
 
-	users := make([]sdk.User, 0)
+	users := make([]User, 0)
 
 	for cursor.Next(context.TODO()) {
 
-		u := sdk.User{}
+		u := User{}
 
 		err := cursor.Decode(&u)
 		if err != nil {

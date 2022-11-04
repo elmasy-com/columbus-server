@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/elmasy-com/columbus-sdk"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 // GetStat resturns the total number of domains (d), the total number of subdomains (s) and the error (if any).
 func GetStat() (d int64, s int64, err error) {
 
-	var dom sdk.Domain
+	var dom Domain
 
 	result, err := Domains.Find(context.TODO(), bson.D{})
 	if err != nil {
