@@ -6,7 +6,7 @@ require (
 	github.com/elmasy-com/columbus-sdk v0.0.0-20221014171908-25b493bbac11
 	github.com/elmasy-com/elnet v0.0.0-20221029160656-c5d421724b19
 	github.com/gin-gonic/gin v1.8.1
-	go.mongodb.org/mongo-driver v1.10.3
+	go.mongodb.org/mongo-driver v1.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
