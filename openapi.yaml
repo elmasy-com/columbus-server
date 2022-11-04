@@ -300,6 +300,10 @@ paths:
                 $ref: '#/components/schemas/Error'
         '403':
           description: Client IP is blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal Server Error
           content:
@@ -357,10 +361,22 @@ paths:
                 $ref: '#/components/schemas/Error'
         '404':
           description: Target user not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '403':
           description: Client IP is blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           description: Desired name is taken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
           
         '500':
           description: Internal Server Error
@@ -431,10 +447,22 @@ paths:
                 $ref: '#/components/schemas/Error'
         '403':
           description: Client IP is blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Target user not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           description: Name is taken.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal Server Error
           content:
