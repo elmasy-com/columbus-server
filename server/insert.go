@@ -14,9 +14,6 @@ import (
 
 func InsertPut(c *gin.Context) {
 
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
-
 	if blacklist.IsBlocked(c.ClientIP()) {
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusForbidden, "blocked")

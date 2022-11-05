@@ -14,9 +14,6 @@ import (
 // Return the current user based on X-Api-Key
 func UserGet(c *gin.Context) {
 
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
-
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
 		return
@@ -60,9 +57,6 @@ func UserGet(c *gin.Context) {
 // PUT /user
 // Create a new user
 func UserPut(c *gin.Context) {
-
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
 
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
@@ -159,9 +153,6 @@ func UserPut(c *gin.Context) {
 // DELETE /user
 func UserDelete(c *gin.Context) {
 
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
-
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
 		return
@@ -225,9 +216,6 @@ func UserDelete(c *gin.Context) {
 
 // PATCH /user
 func UserPatch(c *gin.Context) {
-
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
 
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
@@ -330,9 +318,6 @@ func UserPatch(c *gin.Context) {
 
 // PATCH /user/other
 func UserOtherPatch(c *gin.Context) {
-
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
 
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
@@ -498,9 +483,6 @@ func UserOtherPatch(c *gin.Context) {
 }
 
 func UsersGet(c *gin.Context) {
-
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
 
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})

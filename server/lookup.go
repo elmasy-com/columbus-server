@@ -13,9 +13,6 @@ import (
 
 func LookupGet(c *gin.Context) {
 
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
-
 	// Block blacklisted IPs
 	if blacklist.IsBlocked(c.ClientIP()) {
 		if c.GetHeader("Accept") == "text/plain" {

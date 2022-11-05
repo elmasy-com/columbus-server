@@ -85,9 +85,6 @@ func StatGet(c *gin.Context) {
 		fmt.Printf("UpdateStat() goroutine started!\n")
 	}
 
-	// Allow any origin
-	c.Header("Access-Control-Allow-Origin", "*")
-
 	if blacklist.IsBlocked(c.ClientIP()) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
 		return
