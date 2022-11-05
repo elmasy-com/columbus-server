@@ -106,3 +106,7 @@ systemctl enable columbus-server
 - [ ] Actively collect subdomains of the most used domains with external tools.
 - [ ] UI
     - The current CORS settings allow to embed into every site!
+- [ ] Move /user/other key/name/admin to a separate endpoint to simplify
+        - `/other/name?username=X&name=Y`
+        - `/other/key?username=X`
+        - `/other/admin?username=X&admin=Y`
