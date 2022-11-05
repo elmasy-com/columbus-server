@@ -31,7 +31,7 @@ func LookupGet(c *gin.Context) {
 	d := c.Param("domain")
 
 	if !domain.IsValid(d) {
-		err = fmt.Errorf("invalid domain: %s", d)
+		err = db.ErrInvalidDomain
 		c.Error(err)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusBadRequest, err.Error())

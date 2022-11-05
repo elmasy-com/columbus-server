@@ -73,6 +73,7 @@ func InsertPut(c *gin.Context) {
 			err = db.ErrInvalidDomain
 		case strings.Contains(err.Error(), "cannot derive eTLD+1 for domain"):
 			respCode = http.StatusBadRequest
+			err = fmt.Errorf("domain is a public suffix")
 		default:
 			respCode = http.StatusInternalServerError
 		}
