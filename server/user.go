@@ -343,7 +343,6 @@ func UserOtherPatch(c *gin.Context) {
 	if err != nil {
 
 		var code int
-		var err error
 
 		switch {
 		case errors.Is(err, db.ErrUserKeyEmpty):
