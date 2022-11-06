@@ -192,7 +192,7 @@ func UserDelete(key, name string) error {
 //
 // If user nil, returns fault.ErrUserNil.
 //
-// If key/name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
+// If u.Key/u.Name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
 //
 // If document not modified returns fault.ErrNotModified.
 func UserChangeKey(u *user.User) error {
@@ -229,10 +229,10 @@ func UserChangeKey(u *user.User) error {
 //
 // If user nil, returns fault.ErrUserNil.
 //
-// If key/name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
+// If u.Key/u.Name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
 //
-// If username is taken, returns fault.ErrNameTaken.
-func UserChangeName(u *user.User, newName string) error {
+// If name is taken, returns fault.ErrNameTaken.
+func UserChangeName(u *user.User, name string) error {
 
 	if u == nil {
 		return fault.ErrUserNil
@@ -244,13 +244,13 @@ func UserChangeName(u *user.User, newName string) error {
 		return fault.ErrNameEmpty
 	}
 
-	if taken, err := IsNameTaken(newName); err != nil {
+	if taken, err := IsNameTaken(name); err != nil {
 		return fmt.Errorf("failed to check name: %w", err)
 	} else if taken {
 		return fault.ErrNameTaken
 	}
 
-	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": u.Key, "name": u.Name}, bson.M{"$set": bson.M{"name": newName}})
+	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": u.Key, "name": u.Name}, bson.M{"$set": bson.M{"name": name}})
 	if err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func UserChangeName(u *user.User, newName string) error {
 		return fmt.Errorf("not modified")
 	}
 
-	u.Name = newName
+	u.Name = name
 
 	return nil
 }
