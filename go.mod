@@ -3,7 +3,7 @@ module github.com/elmasy-com/columbus-server
 go 1.19
 
 require (
-	github.com/elmasy-com/columbus-sdk v0.0.0-20221105233234-b6057bc533c7
+	github.com/elmasy-com/columbus-sdk v0.0.0-20221106102142-2d68abac242f
 	github.com/elmasy-com/elnet v0.0.0-20221029160656-c5d421724b19
 	github.com/gin-gonic/gin v1.8.1
 	go.mongodb.org/mongo-driver v1.11.0
