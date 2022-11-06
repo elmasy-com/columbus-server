@@ -26,7 +26,7 @@ func main() {
 	if os.Args[1] == "version" {
 		fmt.Printf("Version: %s\n", Version)
 		fmt.Printf("Git Commit: %s\n", Commit)
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	fmt.Printf("Parsing config file...\n")
@@ -64,5 +64,4 @@ func main() {
 	} else {
 		fmt.Printf("HTTP server stopped!\n")
 	}
-
 }
