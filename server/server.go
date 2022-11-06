@@ -18,7 +18,7 @@ import (
 // The server can stopped with a SIGINT.
 func Run() error {
 
-	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.ReleaseMode)
 	gin.DisableConsoleColor()
 
 	var (
@@ -38,7 +38,10 @@ func Run() error {
 	router.DELETE("/user", UserDelete)
 	router.PATCH("/user", UserPatch)
 	router.GET("/users", UsersGet)
-	router.PATCH("user/other", UserOtherPatch)
+
+	router.PATCH("/other/key", OtherKeyPatch)
+	router.PATCH("/other/name", OtherNamePatch)
+	router.PATCH("/other/admin", OtherAdminPatch)
 
 	router.GET("/stat", StatGet)
 
