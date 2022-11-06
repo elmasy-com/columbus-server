@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/elmasy-com/columbus-server/db"
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ import (
 func UserGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -23,30 +24,26 @@ func UserGet(c *gin.Context) {
 	if err != nil {
 
 		var code int
-		var err2 error
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err2 = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err2 = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
-
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
-			err2 = fmt.Errorf("failed to get user: %w", err)
 		}
 
-		c.Error(err2)
+		c.Error(err)
 
-		c.JSON(code, gin.H{"error": err2.Error()})
+		c.JSON(code, gin.H{"error": err.Error()})
 
 		return
 	}
@@ -59,7 +56,7 @@ func UserGet(c *gin.Context) {
 func UserPut(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -67,30 +64,28 @@ func UserPut(c *gin.Context) {
 	if err != nil {
 
 		var code int
-		var err2 error
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err2 = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err2 = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
 
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
-			err2 = fmt.Errorf("failed to get user: %w", err)
+			err = fmt.Errorf("failed to get user: %w", err)
 		}
 
-		c.Error(err2)
+		c.Error(err)
 
-		c.JSON(code, gin.H{"error": err2.Error()})
+		c.JSON(code, gin.H{"error": err.Error()})
 
 		return
 	}
@@ -99,18 +94,15 @@ func UserPut(c *gin.Context) {
 
 		blacklist.Block(c.ClientIP())
 
-		err := fmt.Errorf("not admin")
-		c.Error(err)
-
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		c.Error(fault.ErrNotAdmin)
+		c.JSON(http.StatusForbidden, fault.ErrNotAdmin)
 		return
 	}
 
 	name := c.Query("name")
 	if name == "" {
-		err := fmt.Errorf("name is empty")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(fault.ErrNameEmpty)
+		c.JSON(http.StatusBadRequest, fault.ErrNameEmpty)
 		return
 	}
 
@@ -134,12 +126,10 @@ func UserPut(c *gin.Context) {
 		code := 0
 
 		switch {
-		case errors.Is(err, db.ErrUserNameTaken):
+		case errors.Is(err, fault.ErrNameTaken):
 			code = http.StatusConflict
-			err = db.ErrUserNameTaken
 		default:
 			code = http.StatusInternalServerError
-			err = fmt.Errorf("failed to create user: %w", err)
 		}
 
 		c.Error(err)
@@ -154,7 +144,7 @@ func UserPut(c *gin.Context) {
 func UserDelete(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -164,18 +154,16 @@ func UserDelete(c *gin.Context) {
 		var code int
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
-
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
@@ -196,7 +184,6 @@ func UserDelete(c *gin.Context) {
 	case "true":
 		err = db.UserDelete(user.Key, user.Name)
 		if err != nil {
-			err = fmt.Errorf("failed to delete user: %w", err)
 			c.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -218,7 +205,7 @@ func UserDelete(c *gin.Context) {
 func UserPatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -228,18 +215,16 @@ func UserPatch(c *gin.Context) {
 		var code int
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
-
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
@@ -270,9 +255,8 @@ func UserPatch(c *gin.Context) {
 		return
 	case upKey != "" && upName != "":
 		// Cant change both parameter at once.
-		err := fmt.Errorf("two update at a time")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(fault.ErrMultipleUpdate)
+		c.JSON(http.StatusBadRequest, fault.ErrMultipleUpdate)
 		return
 	case user.Name == upName:
 		// Old and new name are same
@@ -288,11 +272,10 @@ func UserPatch(c *gin.Context) {
 			code := 0
 
 			switch {
-			case errors.Is(err, db.ErrUserNameTaken):
+			case errors.Is(err, fault.ErrNameTaken):
 				code = http.StatusConflict
 			default:
 				code = http.StatusInternalServerError
-				err = fmt.Errorf("failed to update name: %w", err)
 			}
 
 			c.Error(err)
@@ -306,7 +289,6 @@ func UserPatch(c *gin.Context) {
 	case upKey == "true":
 		err := db.UserChangeKey(&user)
 		if err != nil {
-			err = fmt.Errorf("failed to update key: %w", err)
 			c.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -320,7 +302,7 @@ func UserPatch(c *gin.Context) {
 func UserOtherPatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -330,22 +312,19 @@ func UserOtherPatch(c *gin.Context) {
 		var code int
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
-
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
-			err = fmt.Errorf("failed to get user: %w", err)
 		}
 
 		c.Error(err)
@@ -358,9 +337,9 @@ func UserOtherPatch(c *gin.Context) {
 
 		blacklist.Block(c.ClientIP())
 
-		err := fmt.Errorf("not admin")
-		c.Error(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.Error(fault.ErrNotAdmin)
+		c.JSON(http.StatusUnauthorized, fault.ErrNotAdmin)
+		return
 	}
 
 	target, err := db.UserGetName(c.Query("username"))
@@ -369,11 +348,11 @@ func UserOtherPatch(c *gin.Context) {
 		code := 0
 
 		switch {
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			code = http.StatusNotFound
-		case errors.Is(err, db.ErrUserNameEmpty):
+		case errors.Is(err, fault.ErrNameEmpty):
 			code = http.StatusBadRequest
-			err = fmt.Errorf("username is empty")
+			err = fault.ErrUserNameEmpty
 		default:
 			code = http.StatusInternalServerError
 		}
@@ -395,9 +374,8 @@ func UserOtherPatch(c *gin.Context) {
 	if name != "" {
 
 		if key != "" {
-			err := fmt.Errorf("one update at a time")
-			c.Error(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Error(fault.ErrMultipleUpdate)
+			c.JSON(http.StatusBadRequest, fault.ErrMultipleUpdate)
 			return
 		}
 
@@ -415,9 +393,8 @@ func UserOtherPatch(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		} else if taken {
-			err = fmt.Errorf("name is taken")
-			c.Error(err)
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			c.Error(fault.ErrNameTaken)
+			c.JSON(http.StatusConflict, fault.ErrNameTaken)
 			return
 		}
 	}
@@ -440,9 +417,8 @@ func UserOtherPatch(c *gin.Context) {
 		}
 
 		if key != "" || name != "" {
-			err := fmt.Errorf("one update at a time")
-			c.Error(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Error(fault.ErrMultipleUpdate)
+			c.JSON(http.StatusBadRequest, fault.ErrMultipleUpdate)
 			return
 		}
 	}
@@ -451,7 +427,6 @@ func UserOtherPatch(c *gin.Context) {
 	case key == "true":
 		err := db.UserChangeKey(&target)
 		if err != nil {
-			err = fmt.Errorf("failed to change key: %w", err)
 			c.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -459,7 +434,6 @@ func UserOtherPatch(c *gin.Context) {
 	case name != "":
 		err := db.UserChangeName(&target, name)
 		if err != nil {
-			err = fmt.Errorf("failed to change name: %w", err)
 			c.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -467,7 +441,6 @@ func UserOtherPatch(c *gin.Context) {
 	case admin != "":
 		err := db.UserChangeAdmin(&target, adminBool)
 		if err != nil {
-			err = fmt.Errorf("failed to change admin: %w", err)
 			c.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -485,7 +458,7 @@ func UserOtherPatch(c *gin.Context) {
 func UsersGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -495,22 +468,19 @@ func UsersGet(c *gin.Context) {
 		var code int
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
-
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
-			err = fmt.Errorf("failed to get user: %w", err)
 		}
 
 		c.Error(err)
@@ -523,16 +493,13 @@ func UsersGet(c *gin.Context) {
 
 		blacklist.Block(c.ClientIP())
 
-		err := fmt.Errorf("not admin")
-		c.Error(err)
-
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		c.Error(fault.ErrNotAdmin)
+		c.JSON(http.StatusForbidden, fault.ErrNotAdmin)
 		return
 	}
 
 	users, err := db.UserList()
 	if err != nil {
-		err = fmt.Errorf("failed to get users: %w", err)
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

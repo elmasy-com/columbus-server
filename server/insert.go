@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/elmasy-com/columbus-server/db"
 
@@ -16,9 +16,9 @@ func InsertPut(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
 		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusForbidden, "blocked")
+			c.String(http.StatusForbidden, fault.ErrBlocked.Error())
 		} else {
-			c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+			c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		}
 		return
 	}
@@ -29,15 +29,14 @@ func InsertPut(c *gin.Context) {
 		var code int
 
 		switch {
-		case errors.Is(err, db.ErrUserKeyEmpty):
+		case errors.Is(err, fault.ErrMissingAPIKey):
 			// X-Api-Key header is missing
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("missing X-Api-Key")
 
-		case errors.Is(err, db.ErrUserNotFound):
+		case errors.Is(err, fault.ErrUserNotFound):
 			// X-Api-Key is invalid
 			code = http.StatusUnauthorized
-			err = fmt.Errorf("invalid X-Api-Key")
+			err = fault.ErrInvalidAPIKey
 
 			blacklist.Block(c.ClientIP())
 
@@ -64,12 +63,10 @@ func InsertPut(c *gin.Context) {
 		respCode := 0
 
 		switch {
-		case errors.Is(err, db.ErrInvalidDomain):
+		case errors.Is(err, fault.ErrInvalidDomain):
 			respCode = http.StatusBadRequest
-			err = db.ErrInvalidDomain
-		case strings.Contains(err.Error(), "cannot derive eTLD+1 for domain"):
+		case errors.Is(err, fault.ErrPublicSuffix):
 			respCode = http.StatusBadRequest
-			err = fmt.Errorf("domain is a public suffix")
 		default:
 			respCode = http.StatusInternalServerError
 		}

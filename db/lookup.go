@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/elmasy-com/columbus-sdk/domain"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -19,7 +20,7 @@ func Lookup(d string, full bool) ([]string, error) {
 	}
 	defer cursor.Close(context.TODO())
 
-	var r Domain
+	var r domain.Domain
 	var subs []string
 
 	for cursor.Next(context.TODO()) {
@@ -34,6 +35,10 @@ func Lookup(d string, full bool) ([]string, error) {
 		} else {
 			subs = append(subs, r.Subs...)
 		}
+	}
+
+	if err := cursor.Err(); err != nil {
+		return subs, fmt.Errorf("cursor failed: %w", err)
 	}
 
 	return subs, nil

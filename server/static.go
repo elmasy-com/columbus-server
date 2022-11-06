@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"net/http"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/gin-gonic/gin"
 )
@@ -17,9 +18,9 @@ func StaticOpenApiYamlGet(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", "*")
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
-	c.String(http.StatusOK, "%s\n", openApiYaml)
+	c.String(http.StatusOK, "%s", openApiYaml)
 }

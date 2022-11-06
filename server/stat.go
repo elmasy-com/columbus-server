@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/elmasy-com/columbus-server/db"
 	"github.com/gin-gonic/gin"
@@ -86,7 +87,7 @@ func StatGet(c *gin.Context) {
 	}
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 

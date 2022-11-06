@@ -9,6 +9,8 @@ import (
 	mrand "math/rand"
 	"time"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
+	"github.com/elmasy-com/columbus-sdk/user"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -17,22 +19,13 @@ const (
 	ApiKeyLength = 48
 )
 
-var (
-	ErrUserNotFound   = errors.New("user not found")
-	ErrUserNameEmpty  = errors.New("name is empty")
-	ErrUserKeyEmpty   = errors.New("key is empty")
-	ErrUserNameTaken  = errors.New("name is taken")
-	ErrUserNil        = errors.New("user is nil")
-	ErrUserNotDeleted = errors.New("not deleted")
-)
-
 // IsNameTaken check whether the given user name is already taken.
 //
-// Returns ErrUserNameEmpty if name is empty.
+// Returns fault.ErrNameEmpty if name is empty.
 func IsNameTaken(name string) (bool, error) {
 
 	if name == "" {
-		return false, ErrUserNameEmpty
+		return false, fault.ErrNameEmpty
 	}
 
 	n, err := Users.CountDocuments(context.TODO(), bson.M{"name": name})
@@ -77,25 +70,28 @@ func genAPIKey() (string, error) {
 // UserCreate creates a new user in the users collection and returns it.
 // The API key automatically generated.
 // If admin is true, the new user will be an admin.
-// If user name is already taken returns ErrUserNameTaken error.
-func UserCreate(name string, admin bool) (User, error) {
+//
+// If user name is already taken returns fault.ErrNameTaken error.
+//
+// If name is empty returns fault.ErrNameEmpty.
+func UserCreate(name string, admin bool) (user.User, error) {
 
 	if name == "" {
-		return User{}, ErrUserNameEmpty
+		return user.User{}, fault.ErrNameEmpty
 	}
 
 	if taken, err := IsNameTaken(name); err != nil {
-		return User{}, fmt.Errorf("failed to check user name: %w", err)
+		return user.User{}, fmt.Errorf("failed to check user name: %w", err)
 	} else if taken {
-		return User{}, ErrUserNameTaken
+		return user.User{}, fault.ErrNameTaken
 	}
 
 	key, err := genAPIKey()
 	if err != nil {
-		return User{}, fmt.Errorf("failed to generate key: %w", err)
+		return user.User{}, fmt.Errorf("failed to generate key: %w", err)
 	}
 
-	user := User{
+	user := user.User{
 		Key:   key,
 		Name:  name,
 		Admin: admin,
@@ -108,21 +104,21 @@ func UserCreate(name string, admin bool) (User, error) {
 
 // UserGetKey returns the user from the db based on API key.
 //
-// If user not found, returns ErrUserNotFound error.
+// If user not found, returns fault.ErrUserNotFound error.
 //
-// If key is empty, returns ErrUserKeyEmpty error.
-func UserGetKey(key string) (User, error) {
+// If key is empty, returns fault.ErrMissingAPIKey error.
+func UserGetKey(key string) (user.User, error) {
 
 	if key == "" {
-		return User{}, ErrUserKeyEmpty
+		return user.User{}, fault.ErrMissingAPIKey
 	}
 
-	var u User
+	var u user.User
 
 	r := Users.FindOne(context.TODO(), bson.M{"key": key})
 	if r.Err() != nil {
 		if errors.Is(r.Err(), mongo.ErrNoDocuments) {
-			return u, ErrUserNotFound
+			return u, fault.ErrUserNotFound
 		}
 		return u, fmt.Errorf("failed to find key: %w", r.Err())
 	}
@@ -137,21 +133,21 @@ func UserGetKey(key string) (User, error) {
 
 // UserGetName returns the user from the db based on name.
 //
-// If user not found, returns ErrUserNotFound error.
+// If user not found, returns fault.ErrUserNotFound error.
 //
-// If name is empty, returns ErrUserNameEmpty error.
-func UserGetName(name string) (User, error) {
+// If name is empty, returns fault.ErrNameEmpty error.
+func UserGetName(name string) (user.User, error) {
 
 	if name == "" {
-		return User{}, ErrUserNameEmpty
+		return user.User{}, fault.ErrNameEmpty
 	}
 
-	var u User
+	var u user.User
 
 	r := Users.FindOne(context.TODO(), bson.M{"name": name})
 	if r.Err() != nil {
 		if errors.Is(r.Err(), mongo.ErrNoDocuments) {
-			return u, ErrUserNotFound
+			return u, fault.ErrUserNotFound
 		}
 		return u, fmt.Errorf("failed to find name: %w", r.Err())
 	}
@@ -166,18 +162,18 @@ func UserGetName(name string) (User, error) {
 
 // UserDelete delete user based on key+name.
 //
-// If user not found, returns ErrUserNotFound error.
+// If user not found, returns fault.ErrNameEmpty error.
 //
-// If key is empty, returns ErrUserKeyEmpty error.
+// If key is empty, returns fault.ErrMissingAPIKey error.
 //
-// If DeleteOne() deletes 0 user, returns ErrUserNotDeleted.
+// If DeleteOne() deletes 0 user, returns fault.ErrUserNotDeleted.
 func UserDelete(key, name string) error {
 
 	if key == "" {
-		return ErrUserKeyEmpty
+		return fault.ErrMissingAPIKey
 	}
 	if name == "" {
-		return ErrUserNameEmpty
+		return fault.ErrNameEmpty
 	}
 
 	r, err := Users.DeleteOne(context.TODO(), bson.M{"key": key, "name": name})
@@ -186,7 +182,7 @@ func UserDelete(key, name string) error {
 	}
 
 	if r.DeletedCount == 0 {
-		return ErrUserNotDeleted
+		return fault.ErrUserNotDeleted
 	}
 
 	return nil
@@ -194,19 +190,21 @@ func UserDelete(key, name string) error {
 
 // UserChangeKey update the API key for the given user, and change the key in user.
 //
-// If user nil, returns ErrUserNil.
+// If user nil, returns fault.ErrUserNil.
 //
-// If key/name is empty, returns ErrUserKeyEmpty/ErrUserNameEmpty.
-func UserChangeKey(user *User) error {
+// If key/name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
+//
+// If document not modified returns fault.ErrNotModified.
+func UserChangeKey(u *user.User) error {
 
-	if user == nil {
-		return ErrUserNil
+	if u == nil {
+		return fault.ErrUserNil
 	}
-	if user.Key == "" {
-		return ErrUserKeyEmpty
+	if u.Key == "" {
+		return fault.ErrMissingAPIKey
 	}
-	if user.Name == "" {
-		return ErrUserNameEmpty
+	if u.Name == "" {
+		return fault.ErrNameEmpty
 	}
 
 	newKey, err := genAPIKey()
@@ -214,45 +212,45 @@ func UserChangeKey(user *User) error {
 		return fmt.Errorf("failed to generate API key: %w", err)
 	}
 
-	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": user.Key, "name": user.Name}, bson.M{"$set": bson.M{"key": newKey}})
+	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": u.Key, "name": u.Name}, bson.M{"$set": bson.M{"key": newKey}})
 	if err != nil {
-		return err
+		return fmt.Errorf("update failed: %w", err)
 	}
 	if r.ModifiedCount == 0 {
-		return fmt.Errorf("not modified")
+		return fault.ErrNotModified
 	}
 
-	user.Key = newKey
+	u.Key = newKey
 
 	return nil
 }
 
 // UserChangeName update the name for the given user, and change the name in user.
 //
-// If user nil, returns ErrUserNil.
+// If user nil, returns fault.ErrUserNil.
 //
-// If key/name is empty, returns ErrUserKeyEmpty/ErrUserNameEmpty.
+// If key/name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
 //
-// If username is taken, returns ErrUserNameTaken.
-func UserChangeName(user *User, newName string) error {
+// If username is taken, returns fault.ErrNameTaken.
+func UserChangeName(u *user.User, newName string) error {
 
-	if user == nil {
-		return ErrUserNil
+	if u == nil {
+		return fault.ErrUserNil
 	}
-	if user.Key == "" {
-		return ErrUserKeyEmpty
+	if u.Key == "" {
+		return fault.ErrMissingAPIKey
 	}
-	if user.Name == "" {
-		return ErrUserNameEmpty
+	if u.Name == "" {
+		return fault.ErrNameEmpty
 	}
 
 	if taken, err := IsNameTaken(newName); err != nil {
 		return fmt.Errorf("failed to check name: %w", err)
 	} else if taken {
-		return ErrUserNameTaken
+		return fault.ErrNameTaken
 	}
 
-	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": user.Key, "name": user.Name}, bson.M{"$set": bson.M{"name": newName}})
+	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": u.Key, "name": u.Name}, bson.M{"$set": bson.M{"name": newName}})
 	if err != nil {
 		return err
 	}
@@ -260,27 +258,30 @@ func UserChangeName(user *User, newName string) error {
 		return fmt.Errorf("not modified")
 	}
 
-	user.Name = newName
+	u.Name = newName
 
 	return nil
 }
 
 // UserChangeAdmin update the admin field for the given user, and change the admin value in user.
-// If key is empty, returns ErrUserKeyEmpty.
-// If name is empty, returns ErrUserNameEmpty.
-func UserChangeAdmin(user *User, newValue bool) error {
+// If user nil, returns fault.ErrUserNil.
+//
+// If key/name is empty, returns fault.ErrMissingAPIKey/fault.ErrNameEmpty.
+//
+// If username is taken, returns fault.ErrNameTaken.
+func UserChangeAdmin(u *user.User, newValue bool) error {
 
-	if user == nil {
-		return ErrUserNil
+	if u == nil {
+		return fault.ErrUserNil
 	}
-	if user.Key == "" {
-		return ErrUserKeyEmpty
+	if u.Key == "" {
+		return fault.ErrMissingAPIKey
 	}
-	if user.Name == "" {
-		return ErrUserNameEmpty
+	if u.Name == "" {
+		return fault.ErrNameEmpty
 	}
 
-	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": user.Key, "name": user.Name}, bson.M{"$set": bson.M{"admin": newValue}})
+	r, err := Users.UpdateOne(context.TODO(), bson.M{"key": u.Key, "name": u.Name}, bson.M{"$set": bson.M{"admin": newValue}})
 	if err != nil {
 		return err
 	}
@@ -288,24 +289,24 @@ func UserChangeAdmin(user *User, newValue bool) error {
 		return fmt.Errorf("not modified")
 	}
 
-	user.Admin = newValue
+	u.Admin = newValue
 
 	return nil
 }
 
 // UserList returns a list of every users.
-func UserList() ([]User, error) {
+func UserList() ([]user.User, error) {
 
 	cursor, err := Users.Find(context.TODO(), bson.M{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find users: %w", err)
 	}
 
-	users := make([]User, 0)
+	users := make([]user.User, 0)
 
 	for cursor.Next(context.TODO()) {
 
-		u := User{}
+		u := user.User{}
 
 		err := cursor.Decode(&u)
 		if err != nil {

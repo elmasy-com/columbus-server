@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	sdkdomain "github.com/elmasy-com/columbus-sdk/domain"
 	"github.com/elmasy-com/elnet/domain"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -19,7 +20,7 @@ func Update() error {
 		return fmt.Errorf("find({}) failed: %s", err)
 	}
 
-	var d Domain
+	var d sdkdomain.Domain
 
 	for cursor.Next(context.TODO()) {
 

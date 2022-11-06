@@ -2,34 +2,35 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/elnet/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-var (
-	ErrInvalidDomain = errors.New("invalid domain")
 )
 
 // Insert insert the given domain d to the database.
 // Firstly, checks if d is valid. Then split into sub|domain parts.
 // Sharding means, if the document is reached the 16MB limit increase the "shard" field by one.
 //
-// If domain is invalid, returns ErrInvalidDomain.
+// If domain is invalid, returns fault.ErrInvalidDomain.
+//
+// If d is  publicsuffix, returns fault.ErrPublicSuffix.
 func Insert(d string) error {
 
 	if !domain.IsValid(d) {
-		return ErrInvalidDomain
+		return fault.ErrInvalidDomain
 	}
 
 	d = strings.ToLower(d)
 
 	dom, err := domain.GetDomain(d)
 	if err != nil {
+		if strings.Contains(err.Error(), "cannot derive eTLD+1 for domain") {
+			return fault.ErrPublicSuffix
+		}
 		return fmt.Errorf("failed to get domain: %w", err)
 	} else if dom == "" {
 		return fmt.Errorf("GetDomain() is empty")

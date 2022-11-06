@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/elmasy-com/columbus-server/db"
 	"github.com/elmasy-com/elnet/domain"
@@ -16,9 +17,9 @@ func LookupGet(c *gin.Context) {
 	// Block blacklisted IPs
 	if blacklist.IsBlocked(c.ClientIP()) {
 		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusForbidden, "blocked")
+			c.String(http.StatusForbidden, fault.ErrBlocked.Err)
 		} else {
-			c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+			c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		}
 		return
 	}
@@ -28,12 +29,11 @@ func LookupGet(c *gin.Context) {
 	d := c.Param("domain")
 
 	if !domain.IsValid(d) {
-		err = db.ErrInvalidDomain
-		c.Error(err)
+		c.Error(fault.ErrInvalidDomain)
 		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusBadRequest, err.Error())
+			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Error())
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDomain)
 		}
 		return
 	}
@@ -71,9 +71,9 @@ func LookupGet(c *gin.Context) {
 
 	if len(subs) == 0 {
 		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusNotFound, "not found")
+			c.String(http.StatusNotFound, fault.ErrNotFound.Err)
 		} else {
-			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			c.JSON(http.StatusNotFound, fault.ErrNotFound)
 		}
 		return
 	}
