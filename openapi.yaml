@@ -384,44 +384,23 @@ paths:
           description: Gateway Timeout. Upstream response takes too long.
       security:
         - x-api-key: []
-  /user/other:
+        
+  /other/key:
     patch:
       tags:
         - admin
-      summary: Update other user settings"
+      summary: Update other user key
       description: |
-        Admin can update other user's settings.
-        
-        User can update one setting at a time.
+        Admin can update other user's API key.
       parameters:
         - name: username
-          description: Naem of the user to configure
+          description: Name of the user to configure
           in: query
           required: true
           schema:
             type: string
-        - name: key
-          description: Set this parameter to `true` to get a new key
-          in: query
-          required: false
-          schema:
-            type: boolean
-        - name: name
-          description: Set this paramater to update the name to the value
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: admin
-          description: |
-            Set this to `true` if you want to update the given user to admin.
-            Set to `false` if you want to remove the given user from admin.
-          in: query
-          required: false
-          schema:
-            type: boolean
       responses:
-        '200':
+        '201':
           description: Success.
           content:
             application/json:
@@ -440,7 +419,77 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Client IP is blocked
+          description: Client IP is blocked or user (based on `X-Api-Key`) is not admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Target user not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+      security:
+        - x-api-key: []
+        
+  /other/name:
+    patch:
+      tags:
+        - admin
+      summary: Update other user name
+      description: |
+        Admin can update other user's name.
+      parameters:
+        - name: username
+          description: Name of the user to configure
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: name
+          description: Set this paramater to update the name to the value
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '304':
+          description: Not Modified. The new name is the same as the old.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Bad Request. See the error message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "`X-Api-Key` is missing or invalid"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Client IP is blocked or user (based on `X-Api-Key`) is not admin.
           content:
             application/json:
               schema:
@@ -469,6 +518,76 @@ paths:
           description: Gateway Timeout. Upstream response takes too long.
       security:
         - x-api-key: []
+  /other/admin:
+    patch:
+      tags:
+        - admin
+      summary: Update other user admin status.
+      description: |
+        Admin can update other user's admin status.
+      parameters:
+        - name: username
+          description: Name of the user to configure
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: admin
+          description: Set this paramater to update the admin filed to the value
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '304':
+          description: Not Modified. The new admin value is the same as the old.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Bad Request. See the error message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "`X-Api-Key` is missing or invalid"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Client IP is blocked or user (based on `X-Api-Key`) is not admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Target user not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+      security:
+        - x-api-key: []
+      
   
   /users:
     get:
@@ -490,7 +609,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: The user is not admin
+          description: Blocked or user is not admin
           content:
             application/json:
               schema:
@@ -532,8 +651,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         
-
-
 components:
 
   schemas:
