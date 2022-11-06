@@ -18,7 +18,7 @@ import (
 // The server can stopped with a SIGINT.
 func Run() error {
 
-	//gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 	gin.DisableConsoleColor()
 
 	var (
