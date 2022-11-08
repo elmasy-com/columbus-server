@@ -14,6 +14,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GinLog(param gin.LogFormatterParams) string {
+
+	if param.StatusCode >= 200 && param.StatusCode < 300 && config.LogErrorOnly {
+		return ""
+	}
+
+	return fmt.Sprintf("%s - [%s] \"%s %s\" %d %d \"%s\" %s\n%s",
+		param.ClientIP,
+		param.TimeStamp.Format(time.RFC1123),
+		param.Method,
+		param.Path,
+		param.StatusCode,
+		param.BodySize,
+		param.Request.UserAgent(),
+		param.Latency,
+		param.ErrorMessage,
+	)
+}
+
 // ServerRun start the http server and block.
 // The server can stopped with a SIGINT.
 func Run() error {
@@ -23,9 +42,12 @@ func Run() error {
 
 	var (
 		err    error
-		router = gin.Default()
+		router = gin.New()
 		quit   = make(chan os.Signal, 1)
 	)
+
+	router.Use(gin.LoggerWithFormatter(GinLog))
+	router.Use(gin.Recovery())
 
 	router.SetTrustedProxies(config.TrustedProxies)
 

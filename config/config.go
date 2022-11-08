@@ -15,6 +15,7 @@ type conf struct {
 	BLacklistSec   int      `yaml:"BlacklistSec"`
 	SSLCert        string   `yaml:"SSLCert"`
 	SSLKey         string   `yaml:"SSLKey"`
+	LogErrorOnly   bool     `yaml:"LogErrorOnly"`
 }
 
 var (
@@ -24,6 +25,7 @@ var (
 	BlacklistTime  time.Duration
 	SSLCert        string
 	SSLKey         string
+	LogErrorOnly   bool
 )
 
 // Parse parses the config file in path and gill the global variables.
@@ -61,6 +63,8 @@ func Parse(path string) error {
 
 	SSLCert = c.SSLCert
 	SSLKey = c.SSLKey
+
+	LogErrorOnly = c.LogErrorOnly
 
 	return nil
 }
