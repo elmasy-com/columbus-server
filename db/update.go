@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"os"
 
 	sdkdomain "github.com/elmasy-com/columbus-sdk/domain"
 	"github.com/elmasy-com/elnet/domain"
@@ -29,13 +28,13 @@ func Update() error {
 			return fmt.Errorf("failed to decode: %s", err)
 		}
 
-		dom, err := domain.GetDomain(d.Domain)
-		if err == nil && dom == d.Domain && dom != "" {
+		dom := domain.GetDomain(d.Domain)
+		if dom == d.Domain {
 			// Everything is OK.
 			continue
 		}
 
-		fmt.Printf("%s is not a valid domain, resolving...\n", d.Domain)
+		fmt.Printf("%s is not a valid domain, new domain: %s, resolving...\n", d.Domain, dom)
 
 		l := d.GetFull()
 
@@ -47,7 +46,7 @@ func Update() error {
 
 		_, err = Domains.DeleteOne(context.TODO(), bson.D{{Key: "domain", Value: d.Domain}, {Key: "shard", Value: d.Shard}})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to remove %s/%d: %s", d.Domain, d.Shard, err)
+			return fmt.Errorf("failed to remove %s/%d: %s", d.Domain, d.Shard, err)
 		}
 
 	}

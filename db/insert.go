@@ -16,8 +16,6 @@ import (
 // Sharding means, if the document is reached the 16MB limit increase the "shard" field by one.
 //
 // If domain is invalid, returns fault.ErrInvalidDomain.
-//
-// If d is  publicsuffix, returns fault.ErrPublicSuffix.
 func Insert(d string) error {
 
 	if !domain.IsValid(d) {
@@ -26,21 +24,13 @@ func Insert(d string) error {
 
 	d = strings.ToLower(d)
 
-	dom, err := domain.GetDomain(d)
-	if err != nil {
-		if strings.Contains(err.Error(), "cannot derive eTLD+1 for domain") {
-			return fault.ErrPublicSuffix
-		}
-		return fmt.Errorf("failed to get domain: %w", err)
-	} else if dom == "" {
-		return fmt.Errorf("GetDomain() is empty")
+	dom := domain.GetDomain(d)
+	if dom == "" {
+		return fault.ErrInvalidDomain
 	}
 
 	// TODO: What if sub is empty? For now, add the empty string to the array.
-	sub, err := domain.GetSub(d)
-	if err != nil {
-		return fmt.Errorf("failed to get subdomain: %w", err)
-	}
+	sub := domain.GetSub(d)
 
 	shard := 0
 
@@ -57,7 +47,7 @@ func Insert(d string) error {
 		update := bson.D{{Key: "$addToSet", Value: bson.M{"subs": sub}}}
 		opts := options.Update().SetUpsert(true)
 
-		_, err = Domains.UpdateOne(context.TODO(), filter, update, opts)
+		_, err := Domains.UpdateOne(context.TODO(), filter, update, opts)
 		if err == nil {
 			return nil
 		}

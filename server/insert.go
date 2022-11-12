@@ -65,8 +65,6 @@ func InsertPut(c *gin.Context) {
 		switch {
 		case errors.Is(err, fault.ErrInvalidDomain):
 			respCode = http.StatusBadRequest
-		case errors.Is(err, fault.ErrPublicSuffix):
-			respCode = http.StatusBadRequest
 		default:
 			respCode = http.StatusInternalServerError
 		}
