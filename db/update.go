@@ -18,6 +18,7 @@ func Update() error {
 	if err != nil {
 		return fmt.Errorf("find({}) failed: %s", err)
 	}
+	defer cursor.Close(context.TODO())
 
 	var d sdkdomain.Domain
 
@@ -29,6 +30,9 @@ func Update() error {
 		}
 
 		dom := domain.GetDomain(d.Domain)
+		if dom == "" {
+			return fmt.Errorf("failed to get domian from %s/%d", d.Domain, d.Shard)
+		}
 		if dom == d.Domain {
 			// Everything is OK.
 			continue
