@@ -3,8 +3,8 @@ module github.com/elmasy-com/columbus-server
 go 1.19
 
 require (
-	github.com/elmasy-com/columbus-sdk v0.0.0-20221106102142-2d68abac242f
-	github.com/elmasy-com/elnet v0.0.0-20221029160656-c5d421724b19
+	github.com/elmasy-com/columbus-sdk v0.2.0
+	github.com/elmasy-com/elnet v0.0.0-20221111203202-a3891bc2f2ed
 	github.com/gin-gonic/gin v1.8.1
 	go.mongodb.org/mongo-driver v1.11.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -31,10 +31,10 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/crypto v0.2.0 // indirect
+	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
