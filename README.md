@@ -103,6 +103,5 @@ systemctl enable columbus-server
 
 ## TODO / Further ideas
 
-- [ ] Actively collect subdomains of the most used domains with external tools.
 - [ ] UI
     - The current CORS settings allow to embed into every site!
