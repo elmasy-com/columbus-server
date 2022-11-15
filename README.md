@@ -100,8 +100,4 @@ If you want to columbus start automatically:
 ```
 systemctl enable columbus-server
 ```
-
-## TODO / Further ideas
-
-- [ ] UI
-    - The current CORS settings allow to embed into every site!
+ 
