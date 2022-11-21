@@ -117,7 +117,7 @@ paths:
       parameters:
         - name: domain
           in: path
-          description: domain to insert
+          description: Domain to insert
           required: true
           schema:
             type: string
@@ -134,7 +134,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/String'
         '401':
-          description: X-Api-Key is missing or invalid.
+          description: "`X-Api-Key` is missing or invalid."
           content:
             application/json:
               schema:
@@ -316,26 +316,59 @@ paths:
           description: Gateway Timeout. Upstream response takes too long.
       security:
       - x-api-key: []
-    patch:
+
+  /user/key:
+     patch:
       tags:
         - user
-      summary: Change self user settings.
+      summary: Change user key
       description: |
-        User can update its own setting. User is selected based on `X-Api-Key`.
+        User can update its key. User is selected based on `X-Api-Key`.
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: "`X-Api-Key` is missing or invalid"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Client IP is blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+      security:
+        - x-api-key: []
+  
+  /user/name:
+     patch:
+      tags:
+        - user
+      summary: Change user name
+      description: |
+        User can update its name. User is selected based on `X-Api-Key`.
         
-        User can update one setting at a time (`name` *or* `key`), but not both. Do two request to change both.
+        It is possible that the desired name is taken.
       parameters:
-        - name: key
-          description: Set this parameter to `true` to get a new key
-          in: query
-          required: false
-          schema:
-            type: boolean
         - name: name
           description: |
             Set this paramater to change the name to the value.
-            
-            It is possible that the desired name is taken.
           in: query
           required: false
           schema:
@@ -348,7 +381,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Bad Request. See the error message.
+          description: Bad Request. The name parameter is missing.
           content:
             application/json:
               schema:
@@ -384,7 +417,7 @@ paths:
           description: Gateway Timeout. Upstream response takes too long.
       security:
         - x-api-key: []
-        
+  
   /other/key:
     patch:
       tags:
@@ -683,13 +716,10 @@ components:
       properties:
         date:
           type: integer
-          description: Time is in Unix time format
         domain:
           type: integer
-          description: Total number of domains
         sub:
           type: integer
-          description: Total nombure of subdomains across domains.
 
   securitySchemes:
     x-api-key:

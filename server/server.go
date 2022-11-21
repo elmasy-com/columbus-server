@@ -58,7 +58,8 @@ func Run() error {
 	router.GET("/user", UserGet)
 	router.PUT("/user", UserPut)
 	router.DELETE("/user", UserDelete)
-	router.PATCH("/user", UserPatch)
+	router.PATCH("/user/key", UserKeyPatch)
+	router.PATCH("/user/name", UserNamePatch)
 	router.GET("/users", UsersGet)
 
 	router.PATCH("/other/key", OtherKeyPatch)
