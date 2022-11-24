@@ -16,7 +16,7 @@ import (
 
 func GinLog(param gin.LogFormatterParams) string {
 
-	if param.StatusCode >= 200 && param.StatusCode < 300 && config.LogErrorOnly {
+	if param.StatusCode >= 200 && param.StatusCode < 300 && param.Latency < time.Second && config.LogErrorOnly {
 		return ""
 	}
 
