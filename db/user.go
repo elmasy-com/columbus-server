@@ -2,21 +2,25 @@ package db
 
 import (
 	"context"
-	crand "crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	mrand "math/rand"
-	"time"
+	"os"
 
 	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/columbus-sdk/user"
+	"github.com/sethvargo/go-password/password"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
 	ApiKeyLength = 48
+)
+
+// These variable are set in db.Init()
+var (
+	keyGeneratorInput *password.GeneratorInput
+	keyGenerator      *password.Generator
 )
 
 // IsNameTaken check whether the given user name is already taken.
@@ -40,31 +44,32 @@ func IsNameTaken(name string) (bool, error) {
 // If crypto/rand fail, use math/rand.
 func genAPIKey() (string, error) {
 
+	var (
+		key string
+		err error
+		c   int64
+	)
 	// The chances of collision is **very very** low
 	for {
 
-		key := make([]byte, ApiKeyLength)
-
-		n, err := crand.Read(key)
-		if err == nil && n == ApiKeyLength {
-			goto check
-		}
-
-		// crypto/rand failed, fallback to math/rand
-		mrand.Seed(time.Now().UnixMilli())
-
-		mrand.Read(key)
-
-	check:
-		keyStr := hex.EncodeToString(key)
-		c, err := Users.CountDocuments(context.TODO(), bson.M{"key": keyStr})
+		key, err = keyGenerator.Generate(ApiKeyLength, 10, 10, false, true)
 		if err != nil {
-			return "", err
+			break
 		}
+
+		c, err = Users.CountDocuments(context.TODO(), bson.M{"key": key})
+		if err != nil {
+			break
+		}
+
 		if c == 0 {
-			return keyStr, nil
+			break
 		}
+
+		fmt.Fprintf(os.Stderr, "Key collision found!\n")
 	}
+
+	return key, err
 }
 
 // UserCreate creates a new user in the users collection and returns it.
