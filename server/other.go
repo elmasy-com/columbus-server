@@ -11,6 +11,78 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GET /other
+// Return a other user based on username.
+func OtherGet(c *gin.Context) {
+
+	if blacklist.IsBlocked(c.ClientIP()) {
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
+		return
+	}
+
+	user, err := db.UserGetKey(c.GetHeader("X-Api-Key"))
+	if err != nil {
+
+		var code int
+
+		switch {
+		case errors.Is(err, fault.ErrMissingAPIKey):
+			// X-Api-Key header is missing
+			code = http.StatusUnauthorized
+
+		case errors.Is(err, fault.ErrUserNotFound):
+			// X-Api-Key is invalid
+			code = http.StatusUnauthorized
+			err = fault.ErrInvalidAPIKey
+
+			blacklist.Block(c.ClientIP())
+		default:
+			// Server error while trying to get user
+			code = http.StatusInternalServerError
+			err = fmt.Errorf("failed to get user: %w", err)
+		}
+
+		c.Error(err)
+		c.JSON(code, gin.H{"error": err.Error()})
+
+		return
+	}
+
+	if !user.Admin {
+
+		blacklist.Block(c.ClientIP())
+
+		c.Error(fault.ErrNotAdmin)
+		c.JSON(http.StatusForbidden, fault.ErrNotAdmin)
+		return
+	}
+
+	target, err := db.UserGetName(c.Query("username"))
+	if err != nil {
+
+		var code int
+
+		switch {
+		case errors.Is(err, fault.ErrNameEmpty):
+			code = http.StatusBadRequest
+			err = fault.ErrUserNameEmpty
+		case errors.Is(err, fault.ErrUserNotFound):
+			code = http.StatusNotFound
+		default:
+			// Server error while trying to get user
+			code = http.StatusInternalServerError
+			err = fmt.Errorf("failed to get target user: %w", err)
+		}
+
+		c.Error(err)
+		c.JSON(code, gin.H{"error": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, target)
+}
+
 // PATCH /other/key
 // Change other user's key.
 func OtherKeyPatch(c *gin.Context) {
