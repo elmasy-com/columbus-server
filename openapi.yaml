@@ -418,6 +418,65 @@ paths:
       security:
         - x-api-key: []
   
+  /other:
+    get:
+      tags:
+        - admin
+      summary: Get other user
+      description: |
+        Get other user based on `username`.
+        Only admins can do this.
+      parameters:
+        - name: username
+          description: Name of the user to get
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request. See the error message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: "`X-Api-Key` is missing or invalid"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Client IP is blocked or user (based on `X-Api-Key`) is not admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Target user not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+      security:
+        - x-api-key: []
+        
   /other/key:
     patch:
       tags:
