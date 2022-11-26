@@ -178,9 +178,8 @@ func UserDelete(c *gin.Context) {
 
 	switch c.Query("confirmation") {
 	case "":
-		err := fmt.Errorf("confirmation is missing")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(fault.ErrConfirmMissing)
+		c.JSON(http.StatusBadRequest, fault.ErrConfirmMissing)
 	case "true":
 		err = db.UserDelete(user.Key, user.Name)
 		if err != nil {
@@ -191,9 +190,8 @@ func UserDelete(c *gin.Context) {
 
 		c.Status(http.StatusOK)
 	case "false":
-		err = fmt.Errorf("delete must be confirmed")
-		c.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(fault.ErrNotConfirmed)
+		c.JSON(http.StatusBadRequest, fault.ErrNotConfirmed)
 	default:
 		err = fmt.Errorf("invalid value for confirmation: %s", c.Query("confirmation"))
 		c.Error(err)
