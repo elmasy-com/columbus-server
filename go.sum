@@ -2,8 +2,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/elmasy-com/columbus-sdk v0.2.2 h1:9baG10i47kQPOxsx/25wPOIXtfCZO0TRSLf+5sjY7pw=
-github.com/elmasy-com/columbus-sdk v0.2.2/go.mod h1:zpnOQxRzeBP/fe5+KzGvp4oSi6+c/vSS09Vut5AUYC4=
+github.com/elmasy-com/columbus-sdk v0.2.6-0.20221126110107-39b661ec90de h1:50HMqEZkJkD7yMD/5Ht7w/kIxJqLFe/jbDgWgRYSgHw=
+github.com/elmasy-com/columbus-sdk v0.2.6-0.20221126110107-39b661ec90de/go.mod h1:8yzWwkSKVJnR/bHIfLFNCYs5RumVecI2+ATLlrvKqJQ=
 github.com/elmasy-com/elnet v0.0.0-20221113174715-3e8d065056ee h1:Nk/BpLnVsiUz317DBx5kfB7DmAplxMHbPwq4Ns2vHLY=
 github.com/elmasy-com/elnet v0.0.0-20221113174715-3e8d065056ee/go.mod h1:RtpuBBKp+kXX7hZAE5s7Y+db3RruHrEE/an3HxyXDH0=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
