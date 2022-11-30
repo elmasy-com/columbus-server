@@ -48,7 +48,7 @@ func StaticFaviconIcoGet(c *gin.Context) {
 	c.Data(http.StatusOK, "image/vnd.microsoft.icon", faviconIco)
 }
 
-//go:embed dist/assets/index.d0dfca5a.css
+//go:embed dist/assets/index.2b2de3bf.css
 var indexCss []byte
 
 func StaticIndexCssGet(c *gin.Context) {
