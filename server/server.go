@@ -69,6 +69,13 @@ func Run() error {
 
 	router.GET("/stat", StatGet)
 
+	router.GET("/", StaticIndexHtmlGet)
+	router.GET("/index.html", StaticIndexHtmlGet)
+	router.GET("/assets/favicon.d5f09fd4.ico", StaticFaviconIcoGet)
+	router.GET("/assets/index.20b46c90.css", StaticIndexCssGet)
+	router.GET("/assets/index.d727ceaf.js", StaticIndexJsGet)
+	router.GET("/assets/logo_white.66566ab4.svg", StaticLogoWhiteSvgGet)
+
 	srv := &http.Server{
 		Addr:    config.Address,
 		Handler: router,
