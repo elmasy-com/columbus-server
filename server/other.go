@@ -297,7 +297,7 @@ func OtherAdminPatch(c *gin.Context) {
 		default:
 			// Server error while trying to get user
 			code = http.StatusInternalServerError
-			err = fmt.Errorf("failed to get user: %w")
+			err = fmt.Errorf("failed to get user: %w", err)
 		}
 
 		c.Error(err)
