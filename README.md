@@ -19,18 +19,20 @@ By default Columbus returns only the subdomain in a JSON string array:
 curl 'https://columbus.elmasy.com/lookup/github.com'
 ```
 
-This saves us some computation power, and makes it your responsibility to assemble the hostnames (if you want).
-
-But if you want the full hostnames, include the `full` parameter.
-```bash
-curl 'https://columbus.elmasy.com/lookup/github.com?full=true'
-```
-
 But we think of the bash lovers, so if you don't want to mess with JSON and a newline separated list is your wish, then include the `Accept: text/plain` header.
 ```bash
-for HOST in $(curl -s -H 'Accept: text/plain' 'https://columbus.elmasy.com/lookup/github.com?full=true')
+DOMAIN="github.com"
+
+curl -s -H "Accept: text/plain" "https://columbus.elmasy.com/lookup/$DOMAIN" | \
+while read SUB
 do
-        dig +short $HOST
+        if [[ "$SUB" == "" ]]
+        then
+                HOST="$DOMAIN"
+        else
+                HOST="${SUB}.${DOMAIN}"
+        fi
+        echo "$HOST"
 done
 ```
 
