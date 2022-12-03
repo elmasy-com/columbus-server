@@ -9,8 +9,7 @@ import (
 )
 
 // Lookup query the DB and returns a list subdomains.
-// If full is true, return the full hostname, not just the subs.
-func Lookup(d string, full bool) ([]string, error) {
+func Lookup(d string) ([]string, error) {
 
 	// Use Find() to find every shard of the domain
 
@@ -20,21 +19,18 @@ func Lookup(d string, full bool) ([]string, error) {
 	}
 	defer cursor.Close(context.TODO())
 
-	var r domain.Domain
 	var subs []string
 
 	for cursor.Next(context.TODO()) {
+
+		var r domain.Domain
 
 		err = cursor.Decode(&r)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode: %s", err)
 		}
 
-		if full {
-			subs = append(subs, r.GetFull()...)
-		} else {
-			subs = append(subs, r.Subs...)
-		}
+		subs = append(subs, r.Subs...)
 	}
 
 	if err := cursor.Err(); err != nil {

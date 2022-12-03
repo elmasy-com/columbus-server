@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -38,27 +37,7 @@ func LookupGet(c *gin.Context) {
 		return
 	}
 
-	var full bool
-	getFull := c.DefaultQuery("full", "false")
-
-	switch getFull {
-	case "true":
-		full = true
-	case "false":
-		// Just to check
-		full = false
-	default:
-		err = fmt.Errorf("invalid value for full: %s", getFull)
-		c.Error(err)
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusBadRequest, err.Error())
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-		return
-	}
-
-	subs, err := db.Lookup(d, full)
+	subs, err := db.Lookup(d)
 	if err != nil {
 		c.Error(err)
 		if c.GetHeader("Accept") == "text/plain" {
