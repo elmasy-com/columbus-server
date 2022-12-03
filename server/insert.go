@@ -15,11 +15,7 @@ import (
 func InsertPut(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusForbidden, fault.ErrBlocked.Error())
-		} else {
-			c.JSON(http.StatusForbidden, fault.ErrBlocked)
-		}
+		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
 
@@ -47,13 +43,7 @@ func InsertPut(c *gin.Context) {
 		}
 
 		c.Error(err)
-
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(code, err.Error())
-		} else {
-			c.JSON(code, gin.H{"error": err.Error()})
-		}
-
+		c.JSON(code, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -70,12 +60,7 @@ func InsertPut(c *gin.Context) {
 		}
 
 		c.Error(err)
-
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(respCode, err.Error())
-		} else {
-			c.JSON(respCode, gin.H{"error": err.Error()})
-		}
+		c.JSON(respCode, gin.H{"error": err.Error()})
 		return
 	}
 
