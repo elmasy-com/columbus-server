@@ -14,7 +14,7 @@ sys     0m0.012s
 
 ## Usage
 
-By default Columbus returns only the subdomain in a JSON syring array:
+By default Columbus returns only the subdomain in a JSON string array:
 ```bash
 curl 'https://columbus.elmasy.com/lookup/github.com'
 ```
