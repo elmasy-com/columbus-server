@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/elmasy-com/columbus-sdk/domain"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,6 +11,8 @@ import (
 
 // Lookup query the DB and returns a list subdomains.
 func Lookup(d string) ([]string, error) {
+
+	d = strings.ToLower(d)
 
 	// Use Find() to find every shard of the domain
 
