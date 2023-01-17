@@ -1,94 +1,82 @@
 package server
 
 import (
-	_ "embed"
-	"net/http"
+	"embed"
+	"fmt"
+	"io"
+	"mime"
+	"strings"
 
-	"github.com/elmasy-com/columbus-sdk/fault"
-	"github.com/elmasy-com/columbus-server/blacklist"
 	"github.com/gin-gonic/gin"
 )
 
-//go:embed openapi.yaml
-var openApiYaml []byte
+//go:embed static/*
+var staticFS embed.FS
 
-func StaticOpenApiYamlGet(c *gin.Context) {
+func NoRouteHandler(c *gin.Context) {
 
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
+	p := c.Request.URL.Path
+	if p == "/" {
+		c.Redirect(301, "/index.html")
 		return
 	}
 
-	c.String(http.StatusOK, string(openApiYaml))
-}
+	p = "static" + p
 
-//go:embed dist/index.html
-var indexHtml []byte
-
-func StaticIndexHtmlGet(c *gin.Context) {
-
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
+	file, err := staticFS.Open(p)
+	if err != nil {
+		c.Error(err)
+		c.Status(404)
 		return
 	}
 
-	c.Data(http.StatusOK, "text/html", indexHtml)
-}
-
-//go:embed dist/assets/favicon.d5f09fd4.ico
-var faviconIco []byte
-
-func StaticFaviconIcoGet(c *gin.Context) {
-
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
+	out, err := io.ReadAll(file)
+	if err != nil {
+		c.Error(err)
+		c.Status(404)
 		return
 	}
 
-	c.Data(http.StatusOK, "image/vnd.microsoft.icon", faviconIco)
-}
-
-//go:embed dist/assets/index.2b2de3bf.css
-var indexCss []byte
-
-func StaticIndexCssGet(c *gin.Context) {
-
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
+	fileStat, err := file.Stat()
+	if err != nil {
+		c.Error(err)
+		c.Status(404)
 		return
 	}
 
-	c.Data(http.StatusOK, "text/css", indexCss)
-}
+	i := strings.LastIndexByte(fileStat.Name(), '.')
 
-//go:embed dist/assets/index.bc42e72f.js
-var indexJs []byte
-
-func StaticIndexJsGet(c *gin.Context) {
-
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
+	if i == -1 {
+		// Unknown types will be application/octet-stream
+		c.Data(200, "application/octet-stream", out)
 		return
 	}
 
-	c.Data(http.StatusOK, "text/javascript", indexJs)
-}
+	// Used to store the type
+	t := ""
 
-//go:embed dist/assets/logo_white.66566ab4.svg
-var logoWhiteSvg []byte
+	switch ext := fileStat.Name()[i:]; ext {
+	case ".ico":
+		t = "image/vnd.microsoft.icon"
+	case ".js":
+		t = "text/javascript"
+	case ".css":
+		t = "text/css"
+	case ".svg":
+		t = "image/svg+xml"
+	case ".html":
+		t = "text/html"
+	case ".yaml":
+		t = "application/octet-stream"
+	default:
+		fmt.Printf("Unknown file extension: %s\n", ext)
 
-func StaticLogoWhiteSvgGet(c *gin.Context) {
+		t = mime.TypeByExtension(ext)
 
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
-		return
+		if t == "" {
+			t = "application/octet-stream"
+		}
 	}
 
-	c.Data(http.StatusOK, "image/svg+xml", logoWhiteSvg)
+	c.Data(200, t, out)
 }

@@ -51,9 +51,10 @@ func Run() error {
 
 	router.SetTrustedProxies(config.TrustedProxies)
 
+	router.NoRoute(NoRouteHandler)
+
 	router.GET("/lookup/:domain", LookupGet)
 	router.PUT("/insert/:domain", InsertPut)
-	router.GET("/openapi.yaml", StaticOpenApiYamlGet)
 
 	router.GET("/user", UserGet)
 	router.PUT("/user", UserPut)
@@ -73,13 +74,6 @@ func Run() error {
 	router.GET("/tools/domain/:fqdn", ToolsDomainGet)
 	router.GET("/tools/subdomain/:fqdn", ToolsSubdomainGet)
 	router.GET("/tools/isvalid/:fqdn", ToolsIsValidGet)
-
-	router.GET("/", StaticIndexHtmlGet)
-	router.GET("/index.html", StaticIndexHtmlGet)
-	router.GET("/assets/favicon.d5f09fd4.ico", StaticFaviconIcoGet)
-	router.GET("/assets/index.2b2de3bf.css", StaticIndexCssGet)
-	router.GET("/assets/index.bc42e72f.js", StaticIndexJsGet)
-	router.GET("/assets/logo_white.66566ab4.svg", StaticLogoWhiteSvgGet)
 
 	srv := &http.Server{
 		Addr:    config.Address,
