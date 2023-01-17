@@ -231,7 +231,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '409':
-          description: Name taken
+          description: Name taken or restricted.
           content:
             application/json:
               schema:
@@ -379,7 +379,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '409':
-          description: Desired name is taken
+          description: Desired name is taken or restricted.
           content:
             application/json:
               schema:

@@ -106,6 +106,12 @@ func UserPut(c *gin.Context) {
 		return
 	}
 
+	if name == "self" || name == "new" {
+		c.Error(fault.ErrNameTaken)
+		c.JSON(http.StatusBadRequest, fault.ErrNameTaken)
+		return
+	}
+
 	admin := false
 
 	switch adminStr := c.DefaultQuery("admin", "false"); adminStr {
@@ -287,6 +293,12 @@ func UserNamePatch(c *gin.Context) {
 	if name == "" {
 		c.Error(fault.ErrNameEmpty)
 		c.JSON(http.StatusBadRequest, fault.ErrNameEmpty)
+		return
+	}
+
+	if name == "self" || name == "new" {
+		c.Error(fault.ErrNameTaken)
+		c.JSON(http.StatusBadRequest, fault.ErrNameTaken)
 		return
 	}
 
