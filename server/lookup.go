@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -34,6 +35,18 @@ func LookupGet(c *gin.Context) {
 			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Error())
 		} else {
 			c.JSON(http.StatusBadRequest, fault.ErrInvalidDomain)
+		}
+		return
+	}
+
+	d = strings.ToLower(d)
+	d = domain.GetDomain(d)
+	if d == "" {
+		c.Error(fmt.Errorf("%w: domain is empty", fault.ErrNotFound))
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusNotFound, fault.ErrNotFound.Err)
+		} else {
+			c.JSON(http.StatusNotFound, fault.ErrNotFound)
 		}
 		return
 	}
