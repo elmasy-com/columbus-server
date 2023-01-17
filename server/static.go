@@ -15,6 +15,7 @@ var openApiYaml []byte
 func StaticOpenApiYamlGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -28,6 +29,7 @@ var indexHtml []byte
 func StaticIndexHtmlGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -41,6 +43,7 @@ var faviconIco []byte
 func StaticFaviconIcoGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -54,6 +57,7 @@ var indexCss []byte
 func StaticIndexCssGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -67,6 +71,7 @@ var indexJs []byte
 func StaticIndexJsGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -80,6 +85,7 @@ var logoWhiteSvg []byte
 func StaticLogoWhiteSvgGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}

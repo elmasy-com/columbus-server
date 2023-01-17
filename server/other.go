@@ -16,6 +16,7 @@ import (
 func OtherGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -88,6 +89,7 @@ func OtherGet(c *gin.Context) {
 func OtherKeyPatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -167,6 +169,7 @@ func OtherKeyPatch(c *gin.Context) {
 func OtherNamePatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -274,6 +277,7 @@ func OtherNamePatch(c *gin.Context) {
 func OtherAdminPatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}

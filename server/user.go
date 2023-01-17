@@ -16,6 +16,7 @@ import (
 func UserGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -42,7 +43,6 @@ func UserGet(c *gin.Context) {
 		}
 
 		c.Error(err)
-
 		c.JSON(code, gin.H{"error": err.Error()})
 
 		return
@@ -56,6 +56,7 @@ func UserGet(c *gin.Context) {
 func UserPut(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -84,7 +85,6 @@ func UserPut(c *gin.Context) {
 		}
 
 		c.Error(err)
-
 		c.JSON(code, gin.H{"error": err.Error()})
 
 		return
@@ -150,6 +150,7 @@ func UserPut(c *gin.Context) {
 func UserDelete(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -210,6 +211,7 @@ func UserDelete(c *gin.Context) {
 func UserKeyPatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -257,6 +259,7 @@ func UserKeyPatch(c *gin.Context) {
 func UserNamePatch(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}
@@ -326,6 +329,7 @@ func UserNamePatch(c *gin.Context) {
 func UsersGet(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}

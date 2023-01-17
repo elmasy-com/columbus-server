@@ -15,6 +15,7 @@ import (
 func InsertPut(c *gin.Context) {
 
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		c.JSON(http.StatusForbidden, fault.ErrBlocked)
 		return
 	}

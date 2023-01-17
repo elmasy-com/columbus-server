@@ -15,6 +15,7 @@ func LookupGet(c *gin.Context) {
 
 	// Block blacklisted IPs
 	if blacklist.IsBlocked(c.ClientIP()) {
+		c.Error(fault.ErrBlocked)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusForbidden, fault.ErrBlocked.Err)
 		} else {
@@ -49,6 +50,7 @@ func LookupGet(c *gin.Context) {
 	}
 
 	if len(subs) == 0 {
+		c.Error(fault.ErrNotFound)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusNotFound, fault.ErrNotFound.Err)
 		} else {
