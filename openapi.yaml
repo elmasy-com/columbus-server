@@ -28,6 +28,8 @@ tags:
     description: Admin operations.
   - name: info
     description: Server informations.
+  - name: tools
+    description: Helper APIs.
 
 paths:
   /lookup/{domain}:
@@ -722,6 +724,221 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  
+  /tools/tld/{fqdn}:
+    get:
+      tags:
+        - tools
+      summary: Get the TLD from a FQDN.
+      description: |
+        Get the TLD part (eg.: `com`) from a FQDN (eg.: `columbus.elmasy.com`).
+        
+        **IMPORTANT**: Only ICANN managed TLDs are returned, the private ones are only returned in the Top Level Domain.
+        (eg.: `columbus.elmasy.co.uk` -> `co.uk` or `columbus.elmasy.local` -> `local`)
+        
+        If `Accept` header is `text/plain`, returns the result as a string.
+      parameters:
+        - name: fqdn
+          in: path
+          description: FQDN to get the TLD.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '400':
+          description: Bad Request. See the error message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '403':
+          description: Blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+                
+  /tools/domain/{fqdn}:
+    get:
+      tags:
+        - tools
+      summary: Get the domain from a FQDN.
+      description: |
+        Get the domain part (eg.: `elmasy.com`) from a FQDN (eg.: `columbus.elmasy.com`).
+        
+        If `Accept` header is `text/plain`, returns the result as a string.
+      parameters:
+        - name: fqdn
+          in: path
+          description: FQDN to get the domain.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '400':
+          description: Bad Request. See the error message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '403':
+          description: Blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+  
+  /tools/subdomain/{fqdn}:
+    get:
+      tags:
+        - tools
+      summary: Get the subdomain from a FQDN.
+      description: |
+        Get the subdomain part (eg.: `columbus`) from a FQDN (eg.: `columbus.elmasy.com`).
+        
+        If `Accept` header is `text/plain`, returns the result as a string.
+      parameters:
+        - name: fqdn
+          in: path
+          description: FQDN to get the subdomain.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '400':
+          description: Bad Request. See the error message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '403':
+          description: Blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '404':
+          description: Subdomain not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+  
+  /tools/isvalid/{fqdn}:
+    get:
+      tags:
+        - tools
+      summary: Returns whether FQDN is a valid domain.
+      description: |
+        Returns whether FQDN is a valid domain.
+      parameters:
+        - name: fqdn
+          in: path
+          description: FQDN to check.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '403':
+          description: Blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
         
 components:
 
@@ -732,6 +949,11 @@ components:
         type: string
     String:
       type: string
+    Result:
+      type: object
+      properties:
+        result:
+          type: string
     Error:
       type: object
       properties:

@@ -69,6 +69,11 @@ func Run() error {
 
 	router.GET("/stat", StatGet)
 
+	router.GET("/tools/tld/:fqdn", ToolsTLDGet)
+	router.GET("/tools/domain/:fqdn", ToolsDomainGet)
+	router.GET("/tools/subdomain/:fqdn", ToolsSubdomainGet)
+	router.GET("/tools/isvalid/:fqdn", ToolsIsValidGet)
+
 	router.GET("/", StaticIndexHtmlGet)
 	router.GET("/index.html", StaticIndexHtmlGet)
 	router.GET("/assets/favicon.d5f09fd4.ico", StaticFaviconIcoGet)
