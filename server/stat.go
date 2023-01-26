@@ -7,9 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elmasy-com/columbus-sdk/fault"
-	"github.com/elmasy-com/columbus-server/blacklist"
-	"github.com/elmasy-com/columbus-server/db"
+	"github.com/elmasy-com/columbus-sdk/db"
 	"github.com/gin-gonic/gin"
 )
 
@@ -84,12 +82,6 @@ func StatGet(c *gin.Context) {
 		go UpdateStat()
 		IsUpdateRunning = true
 		fmt.Printf("UpdateStat() goroutine started!\n")
-	}
-
-	if blacklist.IsBlocked(c.ClientIP()) {
-		c.Error(fault.ErrBlocked)
-		c.JSON(http.StatusForbidden, fault.ErrBlocked)
-		return
 	}
 
 	if Current.GetDate() == 0 && Current.GetDomainNum() == 0 && Current.GetSubNum() == 0 {

@@ -54,19 +54,7 @@ func Run() error {
 	router.NoRoute(NoRouteHandler)
 
 	router.GET("/lookup/:domain", LookupGet)
-	router.PUT("/insert/:domain", InsertPut)
-
-	router.GET("/user", UserGet)
-	router.PUT("/user", UserPut)
-	router.DELETE("/user", UserDelete)
-	router.PATCH("/user/key", UserKeyPatch)
-	router.PATCH("/user/name", UserNamePatch)
-	router.GET("/users", UsersGet)
-
-	router.GET("/other", OtherGet)
-	router.PATCH("/other/key", OtherKeyPatch)
-	router.PATCH("/other/name", OtherNamePatch)
-	router.PATCH("/other/admin", OtherAdminPatch)
+	// router.PUT("/insert/:domain", InsertPut)
 
 	router.GET("/stat", StatGet)
 
