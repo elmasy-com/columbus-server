@@ -41,18 +41,6 @@ func main() {
 	}
 	defer db.Disconnect()
 
-	fmt.Printf("Initializing database...\n")
-	if err := db.SetIndex(); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize database: %s\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Updating database...\n")
-	if err := db.Update(); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to update database: %s\n", err)
-		os.Exit(1)
-	}
-
 	fmt.Printf("Starting HTTP server...\n")
 	if err := server.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Server failed: %s\n", err)
