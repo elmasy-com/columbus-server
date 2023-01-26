@@ -16,6 +16,7 @@ type conf struct {
 	SSLCert        string   `yaml:"SSLCert"`
 	SSLKey         string   `yaml:"SSLKey"`
 	LogErrorOnly   bool     `yaml:"LogErrorOnly"`
+	EnableStatAPI  bool     `yaml:"EnableStatAPI"`
 }
 
 var (
@@ -26,6 +27,7 @@ var (
 	SSLCert        string
 	SSLKey         string
 	LogErrorOnly   bool
+	EnableStatAPI  bool
 )
 
 // Parse parses the config file in path and gill the global variables.
@@ -65,6 +67,7 @@ func Parse(path string) error {
 	SSLKey = c.SSLKey
 
 	LogErrorOnly = c.LogErrorOnly
+	EnableStatAPI = c.EnableStatAPI
 
 	return nil
 }

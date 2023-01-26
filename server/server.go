@@ -56,7 +56,9 @@ func Run() error {
 	router.GET("/lookup/:domain", LookupGet)
 	// router.PUT("/insert/:domain", InsertPut)
 
-	router.GET("/stat", StatGet)
+	if config.EnableStatAPI {
+		router.GET("/stat", StatGet)
+	}
 
 	router.GET("/tools/tld/:fqdn", ToolsTLDGet)
 	router.GET("/tools/domain/:fqdn", ToolsDomainGet)
