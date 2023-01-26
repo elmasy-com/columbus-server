@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,7 +11,6 @@ type conf struct {
 	MongoURI       string   `yaml:"MongoURI"`
 	Address        string   `yaml:"Address"`
 	TrustedProxies []string `yaml:"TrustedProxies"`
-	BLacklistSec   int      `yaml:"BlacklistSec"`
 	SSLCert        string   `yaml:"SSLCert"`
 	SSLKey         string   `yaml:"SSLKey"`
 	LogErrorOnly   bool     `yaml:"LogErrorOnly"`
@@ -23,7 +21,6 @@ var (
 	MongoURI       string   // MongoDB connection string
 	Address        string   // Address to listen on
 	TrustedProxies []string // A list of trusted proxies
-	BlacklistTime  time.Duration
 	SSLCert        string
 	SSLKey         string
 	LogErrorOnly   bool
@@ -56,12 +53,6 @@ func Parse(path string) error {
 	Address = c.Address
 
 	TrustedProxies = c.TrustedProxies
-
-	if c.BLacklistSec == 0 {
-		c.BLacklistSec = 60
-	}
-
-	BlacklistTime = time.Duration(c.BLacklistSec) * time.Second
 
 	SSLCert = c.SSLCert
 	SSLKey = c.SSLKey

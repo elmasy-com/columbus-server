@@ -20,8 +20,4 @@ func TestParse(t *testing.T) {
 	if len(TrustedProxies) != 1 {
 		t.Fatalf("FAIL: Invalid TrustedProxies: %#v\n", TrustedProxies)
 	}
-
-	if BlacklistTime.Seconds() != 60.0 {
-		t.Fatalf("FAIL: Invalid BlacklistTime: %s\n", BlacklistTime)
-	}
 }
