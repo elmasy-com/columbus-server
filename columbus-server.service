@@ -1,13 +1,12 @@
 [Unit]
 Description=Columbus Server
-Wants=mongod.service
-After=mongod.service
 
 [Service]
-User=columbus
+User=columbus-server
+Group=columbus-server
 Restart=always
 RestartSec=30s
-ExecStart=/usr/bin/columbus-server /etc/columbus/columbus.conf
+ExecStart=/usr/bin/columbus-server /etc/columbus/server.conf
 
 [Install]
 WantedBy=basic.target
