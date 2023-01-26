@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/elmasy-com/columbus-server/blacklist"
+	"github.com/elmasy-com/columbus-sdk/db"
 	"github.com/elmasy-com/columbus-server/config"
-	"github.com/elmasy-com/columbus-server/db"
 	"github.com/elmasy-com/columbus-server/server"
 )
 
@@ -36,14 +35,14 @@ func main() {
 	}
 
 	fmt.Printf("Connecting to MongoDB...\n")
-	if err := db.Connect(); err != nil {
+	if err := db.Connect(config.MongoURI); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to connect to MongoDB: %s\n", err)
 		os.Exit(1)
 	}
 	defer db.Disconnect()
 
 	fmt.Printf("Initializing database...\n")
-	if err := db.Init(); err != nil {
+	if err := db.SetIndex(); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize database: %s\n", err)
 		os.Exit(1)
 	}
@@ -53,9 +52,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to update database: %s\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("Initializing blacklist...\n")
-	blacklist.Init()
 
 	fmt.Printf("Starting HTTP server...\n")
 	if err := server.Run(); err != nil {
