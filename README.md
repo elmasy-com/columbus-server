@@ -44,6 +44,23 @@ Currently, entries are got from [Certificate Transparency](https://certificate.t
 
 Check the currently parsed CT logs [here](https://status.elmasy.com/status/4803b934327a1168b515).
 
+## Command Line
+
+```
+Usage of columbus-server:
+  -check
+    	Check for updates.
+  -config string
+    	Path to the config file.
+  -version
+    	Print version informations.
+```
+
+`-check`: Check the lates version on GitHub.
+Prints `up-to-date` and returns `0` if no update required.
+Prints the latest tag (eg.: `v0.9.1`) and returns `1` if new release available.
+In case of error, prints the error message and returns `2`.
+
 ## Build
 
 ```bash
