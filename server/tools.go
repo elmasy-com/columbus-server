@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/elmasy-com/columbus-sdk/fault"
 	"github.com/elmasy-com/elnet/domain"
@@ -26,7 +25,7 @@ func ToolsTLDGet(c *gin.Context) {
 		return
 	}
 
-	fqdn = strings.ToLower(fqdn)
+	fqdn = domain.Clean(fqdn)
 
 	d := domain.GetTLD(fqdn)
 	if d == "" {
@@ -62,7 +61,7 @@ func ToolsDomainGet(c *gin.Context) {
 		return
 	}
 
-	fqdn = strings.ToLower(fqdn)
+	fqdn = domain.Clean(fqdn)
 
 	d := domain.GetDomain(fqdn)
 	if d == "" {
@@ -98,7 +97,7 @@ func ToolsSubdomainGet(c *gin.Context) {
 		return
 	}
 
-	fqdn = strings.ToLower(fqdn)
+	fqdn = domain.Clean(fqdn)
 
 	d := domain.GetSub(fqdn)
 	if d == "" {
@@ -123,11 +122,11 @@ func ToolsSubdomainGet(c *gin.Context) {
 func ToolsIsValidGet(c *gin.Context) {
 
 	fqdn := c.Param("fqdn")
-	fqdn = strings.ToLower(fqdn)
+	fqdn = domain.Clean(fqdn)
 
 	if c.GetHeader("Accept") == "text/plain" {
 		c.String(http.StatusOK, fmt.Sprintf("%v", domain.IsValid(fqdn)))
 	} else {
-		c.JSON(http.StatusForbidden, gin.H{"result": fmt.Sprintf("%v", domain.IsValid(fqdn))})
+		c.JSON(http.StatusForbidden, gin.H{"result": domain.IsValid(fqdn)})
 	}
 }
