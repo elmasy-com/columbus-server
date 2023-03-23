@@ -3,10 +3,10 @@ Description=Columbus Server
 
 [Service]
 User=columbus-server
-Group=columbus-server
+Group=columbus
 Restart=always
 RestartSec=30s
-ExecStart=/usr/bin/columbus-server /etc/columbus/server.conf
+ExecStart=/usr/bin/columbus-server -config /etc/columbus/server.conf
 
 [Install]
 WantedBy=basic.target
