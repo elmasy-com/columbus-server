@@ -78,12 +78,6 @@ func UpdateStat() {
 
 func StatGet(c *gin.Context) {
 
-	if !IsUpdateRunning {
-		go UpdateStat()
-		IsUpdateRunning = true
-		fmt.Printf("UpdateStat() goroutine started!\n")
-	}
-
 	if Current.GetDate() == 0 && Current.GetDomainNum() == 0 && Current.GetSubNum() == 0 {
 		c.Status(http.StatusNoContent)
 		return
