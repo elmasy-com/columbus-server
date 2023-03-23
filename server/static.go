@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -32,15 +33,15 @@ func NoRouteHandler(c *gin.Context) {
 
 	out, err := io.ReadAll(file)
 	if err != nil {
-		c.Error(err)
-		c.Status(404)
+		c.Error(fmt.Errorf("failed to read %s: %w", p, err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
 	fileStat, err := file.Stat()
 	if err != nil {
-		c.Error(err)
-		c.Status(404)
+		c.Error(fmt.Errorf("failed to stat() %s: %w", p, err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
