@@ -61,12 +61,6 @@ paths:
             text/plain:
               schema:
                 $ref: '#/components/schemas/String'
-        '403':
-          description: Client IP is blocked.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '404':
           description: Domain not found.
           content:
@@ -85,56 +79,6 @@ paths:
             text/plain:
               schema:
                 $ref: '#/components/schemas/String'
-        '502':
-          description: Bad Gateway. Upstream failed.
-        '504':
-          description: Gateway Timeout. Upstream response takes too long.
-  /insert/{domain}:
-    put:
-      deprecated: true
-      tags:
-        - domain
-      summary: Insert domain.
-      description: |
-        Insert domain to the database.
-        If the domain is exist, silently ignores it.
-      parameters:
-        - name: domain
-          in: path
-          description: Domain to insert
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success.
-        '400':
-          description: Invalid domain.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: "`X-Api-Key` is missing or invalid."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Client IP is blocked.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/String'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '502':
           description: Bad Gateway. Upstream failed.
         '504':
@@ -159,12 +103,8 @@ paths:
                 $ref: '#/components/schemas/Stat'
         '204':
           description: The background process is started recently and currently cant give useful information. Try again later.
-        '403':
-          description: Blocked IP.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '503':
+          description: The API is not enabled
   
   /tools/tld/{fqdn}:
     get:
@@ -197,15 +137,6 @@ paths:
                 $ref: '#/components/schemas/String'
         '400':
           description: Bad Request. See the error message.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/String'
-        '403':
-          description: Blocked
           content:
             application/json:
               schema:
@@ -262,15 +193,6 @@ paths:
             text/plain:
               schema:
                 $ref: '#/components/schemas/String'
-        '403':
-          description: Blocked
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/String'
         '404':
           description: Domain not found
           content:
@@ -320,15 +242,6 @@ paths:
             text/plain:
               schema:
                 $ref: '#/components/schemas/String'
-        '403':
-          description: Blocked
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/String'
         '404':
           description: Subdomain not found
           content:
@@ -363,16 +276,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Result'
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/String'
-        '403':
-          description: Blocked
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ResultBool'
             text/plain:
               schema:
                 $ref: '#/components/schemas/String'
@@ -395,6 +299,11 @@ components:
       properties:
         result:
           type: string
+    ResultBool:
+      type: object
+      properties:
+        result:
+          type: boolean
     Error:
       type: object
       properties:
