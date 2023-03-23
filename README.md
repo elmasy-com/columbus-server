@@ -14,7 +14,7 @@ sys     0m0.012s
 
 ## Usage
 
-By default Columbus returns only the subdomain in a JSON string array:
+By default Columbus returns only the subdomains in a JSON string array:
 ```bash
 curl 'https://columbus.elmasy.com/lookup/github.com'
 ```
@@ -73,7 +73,19 @@ make build
 Create a new user:
 
 ```bash
-adduser --system --no-create-home --disabled-login columbus
+adduser --system --no-create-home --disabled-login columbus-server
+```
+
+Create a new group:
+
+```bash
+addgroup --system columbus
+```
+
+Add the new user to the new group:
+
+```bash
+usermod -aG columbus columbus-server
 ```
 
 Copy the binary to `/usr/bin/columbus-server`.
@@ -88,7 +100,7 @@ Create a directory:
 mkdir /etc/columbus
 ```
 
-Copy the config file to `/etc/columbus/columbus.conf`.
+Copy the config file to `/etc/columbus/server.conf`.
 
 Set the permission to 0600.
 ```bash
@@ -97,7 +109,7 @@ chmod -R 0600 /etc/columbus
 
 Set the owner of the config file:
 ```bash
-chown -R columbus /etc/columbus
+chown -R columbus-server:columbus /etc/columbus
 ```
 
 Install the service file (eg.: `/etc/systemd/system/columbus-server.service`).
