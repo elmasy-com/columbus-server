@@ -27,7 +27,7 @@ func LookupGet(c *gin.Context) {
 			respCode = http.StatusBadRequest
 		default:
 			respCode = http.StatusInternalServerError
-			err = fmt.Errorf("Internal Server Error")
+			err = fmt.Errorf("internal server error")
 		}
 
 		if c.GetHeader("Accept") == "text/plain" {
