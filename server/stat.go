@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/elmasy-com/columbus-sdk/db"
+	"github.com/elmasy-com/columbus-server/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -72,7 +73,7 @@ func UpdateStat() {
 		}
 
 		Current.Update(d, s)
-		time.Sleep(60 * time.Minute)
+		time.Sleep(time.Duration(config.StatAPIWait) * time.Minute)
 	}
 }
 
