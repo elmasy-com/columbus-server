@@ -13,7 +13,7 @@ clean:
 
 static: clean
 	@git clone git@github.com:elmasy-com/columbus-frontend.git
-	@cd columbus-frontend && npm install && npm run build
+	@cd columbus-frontend && npm install && npm run build --prod
 	@mv columbus-frontend/dist server/static
 	@cp openapi.yaml server/static/
 	@rm -rf columbus-frontend
