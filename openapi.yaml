@@ -13,7 +13,7 @@ servers:
   - url: https://columbus.elmasy.com
 tags:
   - name: domain
-    description: Lookup/Insert domain.
+    description: Lookup domain.
   - name: info
     description: Server informations.
   - name: tools
@@ -39,6 +39,70 @@ paths:
         - name: domain
           in: path
           description: Domain to get the subdomains.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringArray'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '400':
+          description: Invalid domain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '404':
+          description: Domain not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/String'
+        '502':
+          description: Bad Gateway. Upstream failed.
+        '504':
+          description: Gateway Timeout. Upstream response takes too long.
+  
+  /tld/{domain}:
+    get:
+      tags:
+        - domain
+      summary: Find TLDs for the given domain.
+      description: |
+        Find TLDs for the given domain.
+
+        Returns a list of all known Top Level Domains for the given domain.
+        
+        The `domain` parameter must be only the Second Level Domain (eg.: `example`)
+        
+        Example: `/tld/example` returns `["com", "org", "net"]`.
+        
+        If `Accept` header is set to `text/plain`, this endpoint returns a newline delimetered text of the list (eg.: `com\norg\nnet`).
+      parameters:
+        - name: domain
+          in: path
+          description: Domain to get the TLDs.
           required: true
           schema:
             type: string
