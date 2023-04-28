@@ -54,6 +54,8 @@ func Run() error {
 	router.NoRoute(NoRouteHandler)
 
 	router.GET("/lookup/:domain", LookupGet)
+	router.GET("/tld/:domain", TLDGet)
+
 	// router.PUT("/insert/:domain", InsertPut)
 
 	if config.EnableStatAPI {
