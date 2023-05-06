@@ -64,12 +64,10 @@ func TLDGet(c *gin.Context) {
 
 		c.Error(fault.ErrInvalidDomain)
 
-		respCode := 0
-
 		if c.GetHeader("Accept") == "text/plain" {
-			c.String(respCode, fault.ErrInvalidDomain.Error())
+			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Error())
 		} else {
-			c.JSON(respCode, fault.ErrInvalidDomain)
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDomain)
 		}
 		return
 	}
