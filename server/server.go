@@ -54,18 +54,30 @@ func Run() error {
 	router.NoRoute(NoRouteHandler)
 
 	router.GET("/lookup/:domain", LookupGet)
+	router.GET("/api/lookup/:domain", LookupGet)
+
 	router.GET("/tld/:domain", TLDGet)
+	router.GET("/api/tld/:domain", TLDGet)
 
 	// router.PUT("/insert/:domain", InsertPut)
 
 	if config.EnableStatAPI {
 		router.GET("/stat", StatGet)
+		router.GET("/api/stat", StatGet)
+
 	}
 
 	router.GET("/tools/tld/:fqdn", ToolsTLDGet)
+	router.GET("/api/tools/tld/:fqdn", ToolsTLDGet)
+
 	router.GET("/tools/domain/:fqdn", ToolsDomainGet)
+	router.GET("/api/tools/domain/:fqdn", ToolsDomainGet)
+
 	router.GET("/tools/subdomain/:fqdn", ToolsSubdomainGet)
+	router.GET("/api/tools/subdomain/:fqdn", ToolsSubdomainGet)
+
 	router.GET("/tools/isvalid/:fqdn", ToolsIsValidGet)
+	router.GET("/api/tools/isvalid/:fqdn", ToolsIsValidGet)
 
 	srv := &http.Server{
 		Addr:    config.Address,
