@@ -51,8 +51,6 @@ func Run() error {
 
 	router.SetTrustedProxies(config.TrustedProxies)
 
-	router.NoRoute(NoRouteHandler)
-
 	router.GET("/api/lookup/:domain", LookupGet)
 
 	router.GET("/api/tld/:domain", TLDGet)

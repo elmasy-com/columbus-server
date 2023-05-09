@@ -6,27 +6,18 @@ LDFLAGS += -extldflags "-static"'
 
 clean:
 	@if [ -e "./columbus-server" ];     then rm -rf "./columbus-server"     ; fi
-	@if [ -e "./columbus-frontend/" ];  then rm -rf "./columbus-frontend"   ; fi
-	@if [ -e "./server/static/" ];      then rm -rf "./server/static/"   	; fi
 	@if [ -e "./release/" ];      		then rm -rf "./release/"			; fi
 
 
-static: clean
-	@git clone git@github.com:elmasy-com/columbus-frontend.git
-	@cd columbus-frontend && npm install && npm run build --prod
-	@mv columbus-frontend/dist server/static
-	@cp openapi.yaml server/static/
-	@rm -rf columbus-frontend
-
-build-prod: static
+build-prod: 
 	go build -o columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
 
-build-dev: static
+build-dev:
 	go build --race -o columbus-server .
 
 build: build-prod
 
-release: static
+release:
 	@mkdir release
 	@go build -o release/columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
 	@cp server.conf release/
