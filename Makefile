@@ -17,7 +17,7 @@ build-dev:
 
 build: build-prod
 
-release:
+release: clean
 	@mkdir release
 	@go build -o release/columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
 	@cp server.conf release/
