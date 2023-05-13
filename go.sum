@@ -11,6 +11,8 @@ github.com/elmasy-com/columbus-sdk v0.8.0 h1:8Nio52tOUHN7vY9AM1ipV1dp5J/+JLs4QPP
 github.com/elmasy-com/columbus-sdk v0.8.0/go.mod h1:RwaqYfNRvNJtrljsMGPzhZvA3K+7En/TFmVDOMhDKA0=
 github.com/elmasy-com/columbus-sdk v0.8.1 h1:nvIAxq+GhVPIW1TA/S9VWL5X+VevIYwGO5vSWaC1US0=
 github.com/elmasy-com/columbus-sdk v0.8.1/go.mod h1:RwaqYfNRvNJtrljsMGPzhZvA3K+7En/TFmVDOMhDKA0=
+github.com/elmasy-com/columbus-sdk v0.8.2 h1:nX8aMq5wtT/JIXNK4LOSkk3AtyscmoBJBi1jOq9tXOE=
+github.com/elmasy-com/columbus-sdk v0.8.2/go.mod h1:RwaqYfNRvNJtrljsMGPzhZvA3K+7En/TFmVDOMhDKA0=
 github.com/elmasy-com/elnet v0.0.0-20230428053729-e41db50c9c3a h1:k8/eh/b8nESwl1fS1LzXvdTiH6FNftDbYUEZIA+FCTw=
 github.com/elmasy-com/elnet v0.0.0-20230428053729-e41db50c9c3a/go.mod h1:pKPJa7uobkPUgGlRs6Apta1H2S4zPHQpv75HLkaptiI=
 github.com/elmasy-com/slices v0.0.0-20230207195255-fd5719a026da h1:jb9Bm+kX+W1ZEe/pPzVP45URQx1WQjM+VHBgJO3EvUM=
