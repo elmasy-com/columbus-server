@@ -97,10 +97,8 @@ func main() {
 	}
 	defer db.Disconnect()
 
-	if config.EnableStatAPI {
-		fmt.Printf("Starting UpdateStat...\n")
-		go server.UpdateStat()
-	}
+	fmt.Printf("Starting UpdateStat...\n")
+	go server.UpdateStat()
 
 	fmt.Printf("Starting HTTP server...\n")
 	if err := server.Run(); err != nil {

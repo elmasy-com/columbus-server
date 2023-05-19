@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/elmasy-com/columbus-sdk/db"
-	"github.com/elmasy-com/columbus-server/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -100,35 +99,21 @@ func (s *Stat) IsEmpty() bool {
 // Updates the Current variable every 60 minutes and updates the unique collection via db.UpdateUniques() every config.StatAPIWait minutes.
 func UpdateStat() {
 
-	updateUniques := time.NewTicker(time.Duration(config.StatAPIWait) * time.Minute)
-	getStat := time.NewTicker(60 * time.Minute)
+	ticker := time.NewTicker(60 * time.Minute)
 
-	// Update stats first
+	// Update stats at the beginning
 	if total, tlds, domains, fullDomains, subs, err := db.GetStat(); err == nil {
 		Current.Update(total, tlds, domains, fullDomains, subs)
 	} else {
 		fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 	}
 
-	for {
+	for range ticker.C {
 
-		select {
-		case <-updateUniques.C:
-
-			err := db.UpdateUniques()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to update uniques: %s\n", err)
-			}
-
-		case <-getStat.C:
-
-			total, tlds, domains, fullDomains, subs, err := db.GetStat()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
-				continue
-			}
-
+		if total, tlds, domains, fullDomains, subs, err := db.GetStat(); err == nil {
 			Current.Update(total, tlds, domains, fullDomains, subs)
+		} else {
+			fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 		}
 	}
 }

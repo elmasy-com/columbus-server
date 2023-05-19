@@ -57,10 +57,7 @@ func Run() error {
 
 	// router.PUT("/insert/:domain", InsertPut)
 
-	if config.EnableStatAPI {
-		router.GET("/api/stat", StatGet)
-
-	}
+	router.GET("/api/stat", StatGet)
 
 	router.GET("/api/tools/tld/:fqdn", ToolsTLDGet)
 	router.GET("/api/tools/domain/:fqdn", ToolsDomainGet)
