@@ -2,15 +2,8 @@
 
 The goal of the Columbus project to provide an API to discover and store every domain's every subdomain and server it nearly instant.
 
-> :heavy_exclamation_mark: This project and the database behind it is new, it takes some time to be usable.
-
-```bash
-time curl 'https://columbus.elmasy.com/lookup/github.com'
-...
-real	0m0.270s
-user	0m0.024s
-sys     0m0.012s
-```
+![Subdomain Lookup](https://columbus.elmasy.com/gif/lookup.gif)
+*Columbus returned 638 subdomains of tesla.com in 0.231 sec.*
 
 ## Usage
 
