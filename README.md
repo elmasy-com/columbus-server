@@ -1,6 +1,6 @@
 # Columbus server
 
-The goal of the Columbus project to provide an API to discover and store every domain's every subdomain and server it nearly instant.
+Columbus Project is an API first subdomain discovery service, blazingly fast subdomain enumeration service with advanced features. 
 
 ![Subdomain Lookup](https://columbus.elmasy.com/gif/lookup.gif)
 *Columbus returned 638 subdomains of tesla.com in 0.231 sec.*
@@ -29,13 +29,11 @@ do
 done
 ```
 
-**For more, see the [OpenAPI specification](https://columbus.elmasy.com/openapi.yaml)**
+**For more, check the [features](https://columbus.elmasy.com/tools) or the [API documentation](https://columbus.elmasy.com/swagger/index.html).**
 
 ## Entries
 
 Currently, entries are got from [Certificate Transparency](https://certificate.transparency.dev/).
-
-Check the currently parsed CT logs [here](https://status.elmasy.com/status/4803b934327a1168b515).
 
 ## Command Line
 
