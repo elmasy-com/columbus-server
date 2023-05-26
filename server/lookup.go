@@ -40,7 +40,14 @@ func LookupGet(c *gin.Context) {
 	}
 
 	if len(subs) == 0 {
+
 		c.Error(fault.ErrNotFound)
+
+		_, err = db.InsertNotFound(c.Param("domain"))
+		if err != nil {
+			c.Error(err)
+		}
+
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusNotFound, fault.ErrNotFound.Err)
 		} else {
