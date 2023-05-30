@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/elmasy-com/columbus-sdk/db"
 	"github.com/elmasy-com/columbus-server/config"
+	"github.com/elmasy-com/columbus-server/db"
 	"github.com/elmasy-com/columbus-server/server"
 )
 

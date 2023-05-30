@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elmasy-com/columbus-sdk/db"
+	"github.com/elmasy-com/columbus-server/db"
 	"github.com/gin-gonic/gin"
 )
 

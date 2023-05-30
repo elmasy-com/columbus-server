@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/elmasy-com/columbus-sdk/fault"
+	"github.com/elmasy-com/columbus-server/fault"
 	"github.com/elmasy-com/elnet/domain"
 	"github.com/gin-gonic/gin"
 )
