@@ -93,3 +93,47 @@ func TLD(d string) ([]string, error) {
 
 	return tlds, nil
 }
+
+// Starts query the DB and returns a list of Second Level Domains (eg.: example) that starts with d.
+//
+// Domain d must be a valid Second Level Domain (eg.: "example").
+// This function validate with IsValidSLD() and Clean().
+//
+// Returns fault.ErrInvalidDomain is d is not a valid Second Level Domain.
+func Starts(d string) ([]string, error) {
+
+	if !domain.IsValidSLD(d) {
+		return nil, fault.ErrInvalidDomain
+	}
+
+	d = domain.Clean(d)
+
+	doc := bson.M{"domain": bson.M{"$regex": fmt.Sprintf("^%s", d)}}
+
+	// Use Find() to find every shard of the domain
+	cursor, err := Domains.Find(context.TODO(), doc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find: %s", err)
+	}
+	defer cursor.Close(context.TODO())
+
+	var domains []string
+
+	for cursor.Next(context.TODO()) {
+
+		var r DomainSchema
+
+		err = cursor.Decode(&r)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode: %s", err)
+		}
+
+		domains = slices.AppendUnique(domains, r.Domain)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor failed: %w", err)
+	}
+
+	return domains, nil
+}

@@ -52,7 +52,7 @@ func Run() error {
 	router.SetTrustedProxies(config.TrustedProxies)
 
 	router.GET("/api/lookup/:domain", LookupGet)
-
+	router.GET("/api/starts/:domain", StartsGet)
 	router.GET("/api/tld/:domain", TLDGet)
 
 	// router.PUT("/insert/:domain", InsertPut)

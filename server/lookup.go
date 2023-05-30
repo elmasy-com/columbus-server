@@ -117,3 +117,57 @@ func TLDGet(c *gin.Context) {
 		c.JSON(http.StatusOK, tlds)
 	}
 }
+
+func StartsGet(c *gin.Context) {
+
+	dom := c.Param("domain")
+
+	if len(dom) < 5 {
+
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Error())
+		} else {
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDomain)
+		}
+		return
+	}
+
+	domains, err := db.Starts(dom)
+	if err != nil {
+
+		c.Error(err)
+		code := 0
+
+		if errors.Is(err, fault.ErrInvalidDomain) {
+			code = http.StatusBadRequest
+		} else {
+			code = http.StatusInternalServerError
+			err = fmt.Errorf("internal server error")
+		}
+
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(code, err.Error())
+		} else {
+			c.JSON(code, err)
+		}
+		return
+	}
+
+	if len(domains) == 0 {
+
+		c.Error(fault.ErrNotFound)
+
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusNotFound, fault.ErrNotFound.Err)
+		} else {
+			c.JSON(http.StatusNotFound, fault.ErrNotFound)
+		}
+		return
+	}
+
+	if c.GetHeader("Accept") == "text/plain" {
+		c.String(http.StatusOK, strings.Join(domains, "\n"))
+	} else {
+		c.JSON(http.StatusOK, domains)
+	}
+}
