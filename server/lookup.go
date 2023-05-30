@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/elmasy-com/columbus-sdk/db"
-	"github.com/elmasy-com/columbus-sdk/fault"
+	"github.com/elmasy-com/columbus-server/db"
+	"github.com/elmasy-com/columbus-server/fault"
 	"github.com/elmasy-com/elnet/domain"
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +16,9 @@ func LookupGet(c *gin.Context) {
 
 	var err error
 
-	subs, err := db.Lookup(c.Param("domain"))
+	d := c.Param("domain")
+
+	subs, err := db.Lookup(d)
 	if err != nil {
 
 		c.Error(err)
@@ -43,9 +45,9 @@ func LookupGet(c *gin.Context) {
 
 		c.Error(fault.ErrNotFound)
 
-		_, err = db.InsertNotFound(c.Param("domain"))
+		_, err = db.InsertNotFound(d)
 		if err != nil {
-			c.Error(err)
+			c.Error(fmt.Errorf("failed to insert notFound: %w", err))
 		}
 
 		if c.GetHeader("Accept") == "text/plain" {
@@ -54,6 +56,11 @@ func LookupGet(c *gin.Context) {
 			c.JSON(http.StatusNotFound, fault.ErrNotFound)
 		}
 		return
+	}
+
+	_, err = db.InsertTopList(d)
+	if err != nil {
+		c.Error(fmt.Errorf("failed to insert topList: %w", err))
 	}
 
 	if c.GetHeader("Accept") == "text/plain" {
