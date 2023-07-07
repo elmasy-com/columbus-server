@@ -13,11 +13,26 @@ type TopListSchema struct {
 	Count  int    `bson:"count" json:"count"`
 }
 
-// Schema used in the "domains" collection.
-type DomainSchema struct {
+// Schema used in Lookup() to ignore the Records field.
+type FastDomainSchema struct {
 	Domain string `bson:"domain" json:"domain"`
 	TLD    string `bson:"tld" json:"tld"`
 	Sub    string `bson:"sub" json:"sub"`
+}
+
+// Schema used to store a record in DomainSchema
+type RecordSchema struct {
+	Type  uint16 `bson:"type" json:"type"`
+	Value string `bson:"value" json:"value"`
+	Time  int64  `bson:"time" json:"time"`
+}
+
+// Schema used in the "domains" collection.
+type DomainSchema struct {
+	Domain  string         `bson:"domain" json:"domain"`
+	TLD     string         `bson:"tld" json:"tld"`
+	Sub     string         `bson:"sub" json:"sub"`
+	Records []RecordSchema `bson:"records,omitempty" json:"records,omitempty"`
 }
 
 // Returns the full hostname (eg.: sub.domain.tld).
