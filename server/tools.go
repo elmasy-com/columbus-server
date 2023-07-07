@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/elmasy-com/columbus-server/fault"
-	"github.com/elmasy-com/elnet/domain"
+	"github.com/elmasy-com/elnet/dns"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ func ToolsTLDGet(c *gin.Context) {
 
 	fqdn := c.Param("fqdn")
 
-	if !domain.IsValid(fqdn) || fqdn == "." {
+	if !dns.IsValid(fqdn) || fqdn == "." {
 		c.Error(fault.ErrInvalidDomain)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Err)
@@ -25,9 +25,9 @@ func ToolsTLDGet(c *gin.Context) {
 		return
 	}
 
-	fqdn = domain.Clean(fqdn)
+	fqdn = dns.Clean(fqdn)
 
-	d := domain.GetTLD(fqdn)
+	d := dns.GetTLD(fqdn)
 	if d == "" {
 		c.Error(fault.ErrNotFound)
 		if c.GetHeader("Accept") == "text/plain" {
@@ -51,7 +51,7 @@ func ToolsDomainGet(c *gin.Context) {
 
 	fqdn := c.Param("fqdn")
 
-	if !domain.IsValid(fqdn) || fqdn == "." {
+	if !dns.IsValid(fqdn) || fqdn == "." {
 		c.Error(fault.ErrInvalidDomain)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Err)
@@ -61,9 +61,9 @@ func ToolsDomainGet(c *gin.Context) {
 		return
 	}
 
-	fqdn = domain.Clean(fqdn)
+	fqdn = dns.Clean(fqdn)
 
-	d := domain.GetDomain(fqdn)
+	d := dns.GetDomain(fqdn)
 	if d == "" {
 		c.Error(fault.ErrNotFound)
 		if c.GetHeader("Accept") == "text/plain" {
@@ -87,7 +87,7 @@ func ToolsSubdomainGet(c *gin.Context) {
 
 	fqdn := c.Param("fqdn")
 
-	if !domain.IsValid(fqdn) || fqdn == "." {
+	if !dns.IsValid(fqdn) || fqdn == "." {
 		c.Error(fault.ErrInvalidDomain)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusBadRequest, fault.ErrInvalidDomain.Err)
@@ -97,9 +97,9 @@ func ToolsSubdomainGet(c *gin.Context) {
 		return
 	}
 
-	fqdn = domain.Clean(fqdn)
+	fqdn = dns.Clean(fqdn)
 
-	d := domain.GetSub(fqdn)
+	d := dns.GetSub(fqdn)
 	if d == "" {
 		c.Error(fault.ErrNotFound)
 		if c.GetHeader("Accept") == "text/plain" {
@@ -122,11 +122,11 @@ func ToolsSubdomainGet(c *gin.Context) {
 func ToolsIsValidGet(c *gin.Context) {
 
 	fqdn := c.Param("fqdn")
-	fqdn = domain.Clean(fqdn)
+	fqdn = dns.Clean(fqdn)
 
 	if c.GetHeader("Accept") == "text/plain" {
-		c.String(http.StatusOK, fmt.Sprintf("%v", domain.IsValid(fqdn)))
+		c.String(http.StatusOK, fmt.Sprintf("%v", dns.IsValid(fqdn)))
 	} else {
-		c.JSON(http.StatusOK, gin.H{"result": domain.IsValid(fqdn)})
+		c.JSON(http.StatusOK, gin.H{"result": dns.IsValid(fqdn)})
 	}
 }
