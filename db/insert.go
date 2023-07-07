@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/elmasy-com/columbus-server/fault"
-	"github.com/elmasy-com/elnet/domain"
+	"github.com/elmasy-com/elnet/dns"
 	"github.com/elmasy-com/elnet/valid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,6 +13,7 @@ import (
 
 // Insert inserts the given domain d to the *domains* database.
 // Checks if d is valid, do a Clean() and then splits into sub|domain|tld parts.
+// If a new domain found, do a RecordsUpdate() after the insert.
 //
 // Returns true if d is new and inserted into the database.
 // If domain is invalid, returns fault.ErrInvalidDomain.
@@ -22,9 +24,9 @@ func Insert(d string) (bool, error) {
 		return false, fault.ErrInvalidDomain
 	}
 
-	d = domain.Clean(d)
+	d = dns.Clean(d)
 
-	p := domain.GetParts(d)
+	p := dns.GetParts(d)
 	if p == nil || p.Domain == "" || p.TLD == "" {
 		return false, fault.ErrGetPartsFailed
 	}
@@ -33,8 +35,18 @@ func Insert(d string) (bool, error) {
 
 	// UpdateOne will insert the document with $setOnInsert + upsert or do nothing
 	res, err := Domains.UpdateOne(context.TODO(), doc, bson.M{"$setOnInsert": doc}, options.Update().SetUpsert(true))
+	if err != nil {
+		return false, fmt.Errorf("failed to update: %w", err)
+	}
 
-	return res.UpsertedCount != 0, err
+	if res.UpsertedCount != 0 {
+		err = RecordsUpdate(&DomainSchema{Domain: p.Domain, TLD: p.TLD, Sub: p.Sub})
+		if err != nil {
+			return false, fmt.Errorf("failed to update records for %s: %w", d, err)
+		}
+	}
+
+	return res.UpsertedCount != 0, nil
 }
 
 // InsertNotFound inserts the given domain d to the *notFound* database.
@@ -48,9 +60,9 @@ func InsertNotFound(d string) (bool, error) {
 		return false, fault.ErrInvalidDomain
 	}
 
-	d = domain.Clean(d)
+	d = dns.Clean(d)
 
-	v := domain.GetDomain(d)
+	v := dns.GetDomain(d)
 	if v == "" {
 		return false, fault.ErrInvalidDomain
 	}
@@ -74,9 +86,9 @@ func InsertTopList(d string) (bool, error) {
 		return false, fault.ErrInvalidDomain
 	}
 
-	d = domain.Clean(d)
+	d = dns.Clean(d)
 
-	v := domain.GetDomain(d)
+	v := dns.GetDomain(d)
 	if v == "" {
 		return false, fault.ErrInvalidDomain
 	}
