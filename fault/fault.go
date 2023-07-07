@@ -37,4 +37,5 @@ var (
 	ErrNotConfirmed   = ColumbusError{"not confirmed"}
 	ErrDataBase       = ColumbusError{"Database error"}
 	ErrGetPartsFailed = ColumbusError{"GetParts() failed"}
+	ErrInvalidDays    = ColumbusError{"invalid days"}
 )
