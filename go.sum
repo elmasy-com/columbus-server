@@ -7,14 +7,8 @@ github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311/go.mod h1:b583j
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/elmasy-com/elnet v0.0.0-20230706235928-ca65cafd0380 h1:114574nYoRsyICDZZrRHd7J68YtY648sdrt0klXkWLs=
-github.com/elmasy-com/elnet v0.0.0-20230706235928-ca65cafd0380/go.mod h1:lo6vpAUmI57d4buBfarAAHhr9rr/G6MeTanusxaJikk=
-github.com/elmasy-com/elnet v0.0.0-20230707012009-861f26007e08 h1:AWPXy1laxMpkwMobSKvQiSbDdct0kEIaVhg6PnDrrL0=
-github.com/elmasy-com/elnet v0.0.0-20230707012009-861f26007e08/go.mod h1:lo6vpAUmI57d4buBfarAAHhr9rr/G6MeTanusxaJikk=
-github.com/elmasy-com/elnet v0.0.0-20230707012409-dcd6b2669542 h1:/H3jaKi/PEFDq/hMYrexIbMKEPqzf8gbCEg2mus0sx8=
-github.com/elmasy-com/elnet v0.0.0-20230707012409-dcd6b2669542/go.mod h1:lo6vpAUmI57d4buBfarAAHhr9rr/G6MeTanusxaJikk=
-github.com/elmasy-com/elnet v0.0.0-20230707030707-11a34ebfc42d h1:80dVtaSfSOXoCWipxF6/ZHbtzbW42FD5tEip8ZE5Mwg=
-github.com/elmasy-com/elnet v0.0.0-20230707030707-11a34ebfc42d/go.mod h1:lo6vpAUmI57d4buBfarAAHhr9rr/G6MeTanusxaJikk=
+github.com/elmasy-com/elnet v0.0.0-20230707105506-e701b51e801f h1:4WQlujwLnm0zOL7DkwGBtdnHwHBfQhnA40Mez41AxeM=
+github.com/elmasy-com/elnet v0.0.0-20230707105506-e701b51e801f/go.mod h1:lo6vpAUmI57d4buBfarAAHhr9rr/G6MeTanusxaJikk=
 github.com/elmasy-com/identify v1.1.0 h1:RWW4FE+6gRpt9lATAyRojwsDiC/hLgO3B9TDdl98sbA=
 github.com/elmasy-com/identify v1.1.0/go.mod h1:RNwFDjyTfqXDvasuNI/PM4s4M7mmH7SsZfMxUDLQkC4=
 github.com/elmasy-com/slices v0.0.0-20230207195255-fd5719a026da h1:jb9Bm+kX+W1ZEe/pPzVP45URQx1WQjM+VHBgJO3EvUM=
