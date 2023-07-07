@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -131,42 +132,66 @@ func RecordsUpdate(d *DomainSchema) error {
 	}
 
 	err := recordsUpdateRecord(d, dns.TypeA)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update A records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeAAAA)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update AAAA records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeTXT)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update TXT records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeCNAME)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update CNAME records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeMX)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update MX records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeNS)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update NS records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeCAA)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update CAA records: %w", err)
 	}
 
 	err = recordsUpdateRecord(d, dns.TypeSRV)
-	if err != nil && !errors.Is(err, dns.ErrName) {
+	if err != nil && !errors.Is(err, dns.ErrName) &&
+		!errors.Is(err, dns.ErrServerFailure) &&
+		strings.Contains(err.Error(), "i/o timeout") {
+
 		return fmt.Errorf("failed to update SRV records: %w", err)
 	}
 
