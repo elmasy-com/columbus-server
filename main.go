@@ -100,6 +100,9 @@ func main() {
 	fmt.Printf("Starting UpdateStat...\n")
 	go server.UpdateStat()
 
+	fmt.Printf("Starting RecordUpdater...\n")
+	go db.RecordUpdater()
+
 	fmt.Printf("Starting HTTP server...\n")
 	if err := server.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Server failed: %s\n", err)
