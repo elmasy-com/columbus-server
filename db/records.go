@@ -204,6 +204,12 @@ func recordsUpdaterRoutine(doms <-chan *DomainSchema, wg *sync.WaitGroup) {
 
 	for dom := range doms {
 
+		// Skip verified domain for now.
+		// TODO: Remove later
+		if len(dom.Records) > 0 {
+			continue
+		}
+
 		err := recordsUpdateRecord(dom, dns.TypeA)
 		if err != nil && !errors.Is(err, dns.ErrName) {
 			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update A records for %s: %s\n", dom, err)
