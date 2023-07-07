@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/elmasy-com/columbus-server/config"
 	"github.com/elmasy-com/elnet/dns"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Update the time in type t and value v record in d domain.
@@ -171,20 +173,80 @@ func RecordsUpdate(d *DomainSchema) error {
 	return nil
 }
 
+func recordsUpdaterRoutine(doms <-chan *DomainSchema, wg *sync.WaitGroup) {
+
+	defer wg.Done()
+
+	for dom := range doms {
+
+		err := recordsUpdateRecord(dom, dns.TypeA)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update A records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeAAAA)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update AAAA records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeTXT)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update TXT records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeCNAME)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update CNAME records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeMX)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update MX records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeNS)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update MX records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeCAA)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update CAA records for %s: %s\n", dom, err)
+		}
+
+		err = recordsUpdateRecord(dom, dns.TypeSRV)
+		if err != nil && !errors.Is(err, dns.ErrName) {
+			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update SRV records for %s: %s\n", dom, err)
+		}
+	}
+
+}
+
 // RecordUpdater is a function created to run as goroutine in the background.
-// Iterate over the domains and update the DNS records.
-func RecordUpdater() {
+// Select random domains and update the DNS records.
+// This function uses concurrent goroutines and ignores any error.
+func RecordsUpdater() {
 
 	for {
 
-		time.Sleep(time.Duration(rand.Intn(3600)) * time.Second)
+		var (
+			start = time.Now()
+			wg    = new(sync.WaitGroup)
+			doms  = make(chan *DomainSchema, 100)
+		)
 
-		cursor, err := Domains.Find(context.TODO(), bson.D{})
+		cursor, err := Domains.Aggregate(context.TODO(), bson.A{bson.M{"$sample": bson.M{"size": 1000}}}, options.Aggregate().SetBatchSize(100))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "RecordUpdater() failed to find: %s\n", err)
+			// Wait before the next try
+			time.Sleep(600 * time.Second)
 			continue
 		}
-		defer cursor.Close(context.TODO())
+
+		for i := 0; i < config.DNSWorker; i++ {
+			wg.Add(1)
+			go recordsUpdaterRoutine(doms, wg)
+		}
 
 	domainLoop:
 		for cursor.Next(context.TODO()) {
@@ -197,16 +259,17 @@ func RecordUpdater() {
 				break domainLoop
 			}
 
-			err = RecordsUpdate(d)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "RecordUpdater() failed to update records for %s: %s\n", d, err)
-				break domainLoop
-			}
-
+			doms <- d
 		}
 
 		if err = cursor.Err(); err != nil {
 			fmt.Fprintf(os.Stderr, "RecordUpdater() cursor failed: %s\n", err)
 		}
+
+		cursor.Close(context.TODO())
+		close(doms)
+		wg.Wait()
+		fmt.Printf("Finished updating 1000 domain records in %s\n", time.Since(start))
+
 	}
 }
