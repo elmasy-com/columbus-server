@@ -101,7 +101,7 @@ func main() {
 	go server.UpdateStat()
 
 	fmt.Printf("Starting RecordUpdater...\n")
-	go db.RecordUpdater()
+	go db.RecordsUpdater()
 
 	fmt.Printf("Starting HTTP server...\n")
 	if err := server.Run(); err != nil {
