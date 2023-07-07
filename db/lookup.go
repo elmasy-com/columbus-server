@@ -3,33 +3,42 @@ package db
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/elmasy-com/columbus-server/fault"
-	"github.com/elmasy-com/elnet/domain"
+	"github.com/elmasy-com/elnet/dns"
 	"github.com/elmasy-com/slices"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Lookup query the DB and returns a list subdomains.
+// days specify, that the returned subdomain must had a valid record in the previous n days.
 //
 // If d has a subdomain, removes it before the query.
+// If days is -1, every subdomain returned.
 //
 // If d is invalid return fault.ErrInvalidDomain.
 // If failed to get parts of d (eg.: d is a TLD), returns ault.ErrGetPartsFailed.
-func Lookup(d string) ([]string, error) {
+func Lookup(d string, days int) ([]string, error) {
 
-	if !domain.IsValid(d) {
+	if !dns.IsValid(d) {
 		return nil, fault.ErrInvalidDomain
 	}
 
-	d = domain.Clean(d)
+	d = dns.Clean(d)
 
-	p := domain.GetParts(d)
+	p := dns.GetParts(d)
 	if p == nil || p.Domain == "" || p.TLD == "" {
 		return nil, fault.ErrGetPartsFailed
 	}
 
-	doc := bson.D{{Key: "domain", Value: p.Domain}, {Key: "tld", Value: p.TLD}}
+	var doc primitive.D
+	if days > 0 {
+		doc = bson.D{{Key: "domain", Value: p.Domain}, {Key: "tld", Value: p.TLD}, {Key: "records.time", Value: bson.D{{Key: "$gt", Value: time.Now().AddDate(0, 0, -1*days).Unix()}}}}
+	} else {
+		doc = bson.D{{Key: "domain", Value: p.Domain}, {Key: "tld", Value: p.TLD}}
+	}
 
 	// Use Find() to find every shard of the domain
 	cursor, err := Domains.Find(context.TODO(), doc)
@@ -42,9 +51,9 @@ func Lookup(d string) ([]string, error) {
 
 	for cursor.Next(context.TODO()) {
 
-		var r DomainSchema
+		r := new(FastDomainSchema)
 
-		err = cursor.Decode(&r)
+		err = cursor.Decode(r)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode: %s", err)
 		}
@@ -102,11 +111,11 @@ func TLD(d string) ([]string, error) {
 // Returns fault.ErrInvalidDomain is d is not a valid Second Level Domain.
 func Starts(d string) ([]string, error) {
 
-	if !domain.IsValidSLD(d) {
+	if !dns.IsValidSLD(d) {
 		return nil, fault.ErrInvalidDomain
 	}
 
-	d = domain.Clean(d)
+	d = dns.Clean(d)
 
 	doc := bson.M{"domain": bson.M{"$regex": fmt.Sprintf("^%s", d)}}
 

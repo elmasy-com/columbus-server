@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/elmasy-com/columbus-server/db"
 	"github.com/elmasy-com/columbus-server/fault"
-	"github.com/elmasy-com/elnet/domain"
+	"github.com/elmasy-com/elnet/dns"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,9 +17,50 @@ func LookupGet(c *gin.Context) {
 
 	var err error
 
+	// Parse domain param
 	d := c.Param("domain")
 
-	subs, err := db.Lookup(d)
+	// Parse days query param
+	daysStr, daysSet := c.GetQuery("days")
+	if !daysSet {
+		daysStr = "-1"
+	}
+
+	if daysSet && daysStr == "" {
+		c.Error(fault.ErrInvalidDays)
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
+		} else {
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDays)
+		}
+		return
+	}
+
+	days, err := strconv.Atoi(daysStr)
+	if err != nil {
+		err = fmt.Errorf("failed to parse days: %s", err)
+
+		c.Error(err)
+
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
+		} else {
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDays)
+		}
+		return
+	}
+
+	if daysSet && days < 1 {
+		c.Error(fault.ErrInvalidDays)
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
+		} else {
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDays)
+		}
+		return
+	}
+
+	subs, err := db.Lookup(d, days)
 	if err != nil {
 
 		c.Error(err)
@@ -74,7 +116,7 @@ func TLDGet(c *gin.Context) {
 
 	dom := c.Param("domain")
 
-	if !domain.IsValidSLD(dom) {
+	if !dns.IsValidSLD(dom) {
 
 		c.Error(fault.ErrInvalidDomain)
 
@@ -86,7 +128,7 @@ func TLDGet(c *gin.Context) {
 		return
 	}
 
-	dom = domain.Clean(dom)
+	dom = dns.Clean(dom)
 
 	tlds, err := db.TLD(dom)
 	if err != nil {
