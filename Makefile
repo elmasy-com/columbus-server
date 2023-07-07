@@ -10,7 +10,7 @@ clean:
 
 
 build-prod: 
-	go build -o columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
+	CGO_ENABLED=0 go build -o columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
 
 build-dev:
 	go build --race -o columbus-server .
@@ -19,7 +19,7 @@ build: build-prod
 
 release: clean
 	@mkdir release
-	@go build -o release/columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
+	@CGO_ENABLED=0 go build -o release/columbus-server -tags netgo -ldflags="$(LDFLAGS)" .
 	@cp server.conf release/
 	@cp columbus-server.service release/
 	@cd release/ && sha512sum * | gpg --local-user daniel@elmasy.com -o checksum.txt --clearsign
