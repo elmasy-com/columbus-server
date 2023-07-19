@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/elmasy-com/elnet/dns"
@@ -19,7 +20,8 @@ type conf struct {
 	DNSServers     []string `yaml:"DNSServers"`
 	DNSPort        string   `yaml:"DNSPort"`
 	DNSProtocol    string   `yaml:"DNSProtocol"`
-	DNSWorker      int      `yaml:"DNSWorker"`
+	DomainWorker   int      `yaml:"DomainWorker"`
+	DomainBuffer   int      `yaml:"DomainBuffer"`
 }
 
 var (
@@ -32,7 +34,8 @@ var (
 	DNSServers     []string
 	DNSPort        string
 	DNSProtocol    string
-	DNSWorker      int
+	DomainWorker   int
+	DomainBuffer   int
 )
 
 // Parse parses the config file in path and gill the global variables.
@@ -89,11 +92,17 @@ func Parse(path string) error {
 
 	DNSProtocol = c.DNSProtocol
 
-	if c.DNSWorker == 0 {
-		c.DNSWorker = 1
+	if c.DomainWorker == 0 {
+		c.DomainWorker = runtime.NumCPU()
 	}
 
-	DNSWorker = c.DNSWorker
+	DomainWorker = c.DomainWorker
+
+	if c.DomainBuffer == 0 {
+		c.DomainBuffer = 1000
+	}
+
+	DomainBuffer = c.DomainBuffer
 
 	return nil
 }
