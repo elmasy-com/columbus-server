@@ -26,6 +26,7 @@ var (
 )
 
 // Update type t records for d.
+// Check if domain d is a wildcard t type record.
 // This function updates the DB.
 func recordsUpdateRecord(d string, t uint16) error {
 
@@ -44,6 +45,15 @@ func recordsUpdateRecord(d string, t uint16) error {
 		r   []string
 		err error
 	)
+
+	// CHeck if domain has a t type wildcard record.
+	wc, err := dns.IsWildcard(d, t)
+	if err != nil {
+		return err
+	}
+	if wc {
+		return nil
+	}
 
 	switch t {
 
@@ -143,6 +153,8 @@ func recordsUpdateRecord(d string, t uint16) error {
 // This function updates the records in the database.
 // If the same record found, updates the "time" field in element.
 // If new record found, append it to the "records" field.
+//
+// Checks if d is a wildcard record before update.
 //
 // If ignore is true, common DNS errors are ignored.
 //
