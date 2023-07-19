@@ -405,7 +405,7 @@ func TopListUpdater(wg *sync.WaitGroup) {
 
 		start := time.Now()
 
-		cursor, err := TopList.Find(context.TODO(), bson.M{}, options.Find().SetBatchSize(10).SetSort(bson.M{"count": -1}))
+		cursor, err := TopList.Find(context.TODO(), bson.M{}, options.Find().SetSort(bson.M{"count": -1}))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "TopListUpdater() failed to find toplist: %s\n", err)
 			continue

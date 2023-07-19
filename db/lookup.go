@@ -10,7 +10,6 @@ import (
 	"github.com/elmasy-com/slices"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Lookup query the DB and returns a list subdomains only.
@@ -52,7 +51,7 @@ func Lookup(d string, days int) ([]string, error) {
 	}
 
 	// Use Find() to find every shard of the domain
-	cursor, err := Domains.Find(context.TODO(), doc, options.Find().SetBatchSize(100))
+	cursor, err := Domains.Find(context.TODO(), doc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find: %s", err)
 	}
@@ -118,7 +117,7 @@ func LookupFull(d string, days int) ([]string, error) {
 	}
 
 	// Use Find() to find every shard of the domain
-	cursor, err := Domains.Find(context.TODO(), doc, options.Find().SetBatchSize(100))
+	cursor, err := Domains.Find(context.TODO(), doc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find: %s", err)
 	}
