@@ -13,6 +13,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Return the "days" query parameter.
+// If not set, returns -1.
+func getQueryDays(c *gin.Context) (int, error) {
+
+	// Parse days query param
+	daysStr, daysSet := c.GetQuery("days")
+	if !daysSet {
+		return -1, nil
+	}
+
+	if daysStr == "" {
+		return -2, fmt.Errorf("empty")
+	}
+
+	return strconv.Atoi(daysStr)
+}
+
 func LookupGet(c *gin.Context) {
 
 	var err error
@@ -21,36 +38,8 @@ func LookupGet(c *gin.Context) {
 	d := c.Param("domain")
 
 	// Parse days query param
-	daysStr, daysSet := c.GetQuery("days")
-	if !daysSet {
-		daysStr = "-1"
-	}
-
-	if daysSet && daysStr == "" {
-		c.Error(fault.ErrInvalidDays)
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
-		} else {
-			c.JSON(http.StatusBadRequest, fault.ErrInvalidDays)
-		}
-		return
-	}
-
-	days, err := strconv.Atoi(daysStr)
+	days, err := getQueryDays(c)
 	if err != nil {
-		err = fmt.Errorf("failed to parse days: %s", err)
-
-		c.Error(err)
-
-		if c.GetHeader("Accept") == "text/plain" {
-			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
-		} else {
-			c.JSON(http.StatusBadRequest, fault.ErrInvalidDays)
-		}
-		return
-	}
-
-	if daysSet && days < 1 {
 		c.Error(fault.ErrInvalidDays)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
@@ -69,6 +58,8 @@ func LookupGet(c *gin.Context) {
 
 		switch {
 		case errors.Is(err, fault.ErrInvalidDomain):
+			respCode = http.StatusBadRequest
+		case errors.Is(err, fault.ErrInvalidDays):
 			respCode = http.StatusBadRequest
 		default:
 			respCode = http.StatusInternalServerError
@@ -98,6 +89,12 @@ func LookupGet(c *gin.Context) {
 			c.JSON(http.StatusNotFound, fault.ErrNotFound)
 		}
 		return
+	}
+
+	// Send to db.RecordsUpdaterDomainChan if the channle if not full to update the DNS records.
+	// Send only if any subdomain found.
+	if len(db.RecordsUpdaterDomainChan) < cap(db.RecordsUpdaterDomainChan) {
+		db.RecordsUpdaterDomainChan <- d
 	}
 
 	_, err = db.InsertTopList(d)
@@ -212,4 +209,67 @@ func StartsGet(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, domains)
 	}
+}
+
+func HistoryGet(c *gin.Context) {
+
+	var err error
+
+	// Parse domain param
+	d := c.Param("domain")
+
+	// Parse days query param
+	days, err := getQueryDays(c)
+	if err != nil {
+		c.Error(fault.ErrInvalidDays)
+		if c.GetHeader("Accept") == "text/plain" {
+			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
+		} else {
+			c.JSON(http.StatusBadRequest, fault.ErrInvalidDays)
+		}
+		return
+	}
+
+	records, err := db.Records(d, days)
+	if err != nil {
+
+		c.Error(err)
+
+		respCode := 0
+
+		switch {
+		case errors.Is(err, fault.ErrInvalidDomain):
+			respCode = http.StatusBadRequest
+		case errors.Is(err, fault.ErrInvalidDays):
+			respCode = http.StatusBadRequest
+		default:
+			respCode = http.StatusInternalServerError
+			err = fmt.Errorf("internal server error")
+		}
+
+		c.JSON(respCode, gin.H{"error": err.Error()})
+
+		return
+	}
+
+	// Send to db.RecordsUpdaterDomainChan if the channle if not full to update records.
+	if len(db.RecordsUpdaterDomainChan) < cap(db.RecordsUpdaterDomainChan) {
+		db.RecordsUpdaterDomainChan <- d
+	}
+
+	if len(records) == 0 {
+
+		c.Error(fault.ErrNotFound)
+
+		c.JSON(http.StatusNotFound, fault.ErrNotFound)
+
+		return
+	}
+
+	_, err = db.InsertTopList(d)
+	if err != nil {
+		c.Error(fmt.Errorf("failed to insert topList: %w", err))
+	}
+
+	c.JSON(http.StatusOK, records)
 }
