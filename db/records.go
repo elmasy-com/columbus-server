@@ -300,7 +300,7 @@ func recordsUpdaterRoutine(wg *sync.WaitGroup) {
 
 	for {
 
-		if totalUpdated.Load()%10000 == 0 {
+		if totalUpdated.Load()%100000 == 0 {
 			if totalUpdated.Load() != 0 {
 				fmt.Printf("recordsUpdaterRoutine(): Updated %d domain records in %s\n", totalUpdated.Load(), time.Since(startTime))
 			}
@@ -311,7 +311,6 @@ func recordsUpdaterRoutine(wg *sync.WaitGroup) {
 		select {
 		case dom := <-RecordsUpdaterDomainChan:
 			d = dom
-			fmt.Printf("recordsUpdaterRoutine updating %s...\n", dom)
 
 		case dom := <-internalRecordsUpdaterDomainChan:
 			d = dom
