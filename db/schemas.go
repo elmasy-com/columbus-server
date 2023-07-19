@@ -20,6 +20,16 @@ type FastDomainSchema struct {
 	Sub    string `bson:"sub" json:"sub"`
 }
 
+// Returns the full hostname (eg.: sub.domain.tld).
+func (d *FastDomainSchema) String() string {
+
+	if d.Sub == "" {
+		return strings.Join([]string{d.Domain, d.TLD}, ".")
+	} else {
+		return strings.Join([]string{d.Sub, d.Domain, d.TLD}, ".")
+	}
+}
+
 // Schema used to store a record in DomainSchema
 type RecordSchema struct {
 	Type  uint16 `bson:"type" json:"type"`
