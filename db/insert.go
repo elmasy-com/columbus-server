@@ -13,11 +13,12 @@ import (
 
 // Insert inserts the given domain d to the *domains* database.
 // Checks if d is valid, do a Clean() and then splits into sub|domain|tld parts.
-// If a new domain found, do a RecordsUpdate() after the insert.
 //
 // Returns true if d is new and inserted into the database.
 // If domain is invalid, returns fault.ErrInvalidDomain.
 // If failed to get parts of d (eg.: d is a TLD), returns ault.ErrGetPartsFailed.
+//
+// NOTE: Use RecordsUpdate() after Insert()!
 func Insert(d string) (bool, error) {
 
 	if !valid.Domain(d) {
@@ -37,13 +38,6 @@ func Insert(d string) (bool, error) {
 	res, err := Domains.UpdateOne(context.TODO(), doc, bson.M{"$setOnInsert": doc}, options.Update().SetUpsert(true))
 	if err != nil {
 		return false, fmt.Errorf("failed to update: %w", err)
-	}
-
-	if res.UpsertedCount != 0 {
-		err = RecordsUpdate(&DomainSchema{Domain: p.Domain, TLD: p.TLD, Sub: p.Sub})
-		if err != nil {
-			return false, fmt.Errorf("failed to update records for %s: %w", d, err)
-		}
 	}
 
 	return res.UpsertedCount != 0, nil
