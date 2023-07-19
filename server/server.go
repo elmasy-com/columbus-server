@@ -54,6 +54,7 @@ func Run() error {
 	router.GET("/api/lookup/:domain", LookupGet)
 	router.GET("/api/starts/:domain", StartsGet)
 	router.GET("/api/tld/:domain", TLDGet)
+	router.GET("/api/history/:domain", HistoryGet)
 
 	// router.PUT("/insert/:domain", InsertPut)
 
