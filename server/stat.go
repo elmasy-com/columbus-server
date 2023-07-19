@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -12,22 +13,31 @@ import (
 )
 
 type Stat struct {
-	Date     int64
-	Totalnum int64
-	m        sync.Mutex
+	Date  int64      `json:"date"`
+	Total int64      `json:"total"`
+	Valid int64      `json:"valid"`
+	m     sync.Mutex `json:"-"`
 }
 
 var (
 	Current Stat
 )
 
-func (s *Stat) Update(TotalNum int64) {
+func (s *Stat) Update(total, valid int64) {
 
 	s.m.Lock()
 	defer s.m.Unlock()
 
 	s.Date = time.Now().Unix()
-	s.Totalnum = TotalNum
+	s.Total = total
+	s.Valid = valid
+}
+
+func (s *Stat) Get() Stat {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	return Stat{Date: s.Date, Total: s.Total, Valid: s.Valid}
 }
 
 func (s *Stat) GetDate() int64 {
@@ -43,7 +53,15 @@ func (s *Stat) GetTotalNum() int64 {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return s.Totalnum
+	return s.Total
+}
+
+func (s *Stat) GetValidNum() int64 {
+
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	return s.Valid
 }
 
 func (s *Stat) IsEmpty() bool {
@@ -51,7 +69,7 @@ func (s *Stat) IsEmpty() bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return s.Date == 0 && s.Totalnum == 0
+	return s.Date == 0 && s.Total == 0 && s.Valid == 0
 }
 
 // UpdateStat is created to run as a goroutine.
@@ -59,22 +77,23 @@ func (s *Stat) IsEmpty() bool {
 // Updates the Current variable every 60 minutes and updates the unique collection via db.UpdateUniques() every config.StatAPIWait minutes.
 func UpdateStat() {
 
-	ticker := time.NewTicker(6 * time.Hour)
-
 	// Update stats at the beginning
-	if total, err := db.GetStat(); err == nil {
-		Current.Update(total)
+	if total, valid, err := db.GetStat(); err == nil {
+		Current.Update(total, valid)
 	} else {
 		fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 	}
 
-	for range ticker.C {
+	for {
 
-		if total, err := db.GetStat(); err == nil {
-			Current.Update(total)
+		time.Sleep(time.Duration(rand.Int63n(7200)+7200) * time.Second)
+
+		if total, valid, err := db.GetStat(); err == nil {
+			Current.Update(total, valid)
 		} else {
 			fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 		}
+
 	}
 }
 
@@ -87,5 +106,5 @@ func StatGet(c *gin.Context) {
 
 	// Return a copy only.
 	// This was the easiest way to control the write (update) / read process with the mutex.
-	c.JSON(http.StatusOK, gin.H{"date": Current.GetDate(), "total": Current.GetTotalNum()})
+	c.JSON(http.StatusOK, Current.Get())
 }
