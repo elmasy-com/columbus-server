@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Lookup query the DB and returns a list subdomains only.
+// Lookup validate, Clean() and query the DB and returns a list subdomains only.
 // days specify, that the returned subdomain must had a valid record in the previous n days.
 // If days is 0, return every subdomain that has a record regardless of the time.
 // If days is -1, every subdomain returned, including domains that does not have a record.
@@ -20,7 +20,7 @@ import (
 // If d has a subdomain, removes it before the query.
 //
 // If d is invalid return fault.ErrInvalidDomain.
-// If failed to get parts of d (eg.: d is a TLD), returns ault.ErrGetPartsFailed.
+// If failed to get parts of d (eg.: d is a TLD), returns fault.ErrGetPartsFailed.
 // If days if < -1, returns fault.ErrInvalidDays.
 func Lookup(d string, days int) ([]string, error) {
 
@@ -78,7 +78,7 @@ func Lookup(d string, days int) ([]string, error) {
 	return subs, nil
 }
 
-// Lookup query the DB and returns a list full domains with subdomain.
+// LookupFull validate, Clean() and query the DB and returns a list full domains with subdomain.
 // days specify, that the returned subdomain must had a valid record in the previous n days.
 // If days is 0, return every subdomain that has a record regardless of the time.
 // If days is -1, every subdomain returned, including domains that does not have a record.
@@ -162,7 +162,7 @@ func TLD(d string) ([]string, error) {
 
 	for cursor.Next(context.TODO()) {
 
-		var r DomainSchema
+		var r FastDomainSchema
 
 		err = cursor.Decode(&r)
 		if err != nil {
@@ -206,7 +206,7 @@ func Starts(d string) ([]string, error) {
 
 	for cursor.Next(context.TODO()) {
 
-		var r DomainSchema
+		var r FastDomainSchema
 
 		err = cursor.Decode(&r)
 		if err != nil {
@@ -248,7 +248,7 @@ func Records(d string, days int) ([]RecordSchema, error) {
 	var doc primitive.D
 
 	if days == 0 || days == -1 {
-		// "records" field is exists
+		// "records" field is/must exists
 		doc = bson.D{{Key: "domain", Value: p.Domain}, {Key: "tld", Value: p.TLD}, {Key: "sub", Value: p.Sub}, {Key: "records", Value: bson.D{{Key: "$exists", Value: true}}}}
 	} else if days > 0 {
 		// Return every domain that has a record found in the last days days
