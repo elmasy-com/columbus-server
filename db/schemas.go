@@ -42,6 +42,7 @@ type DomainSchema struct {
 	Domain  string         `bson:"domain" json:"domain"`
 	TLD     string         `bson:"tld" json:"tld"`
 	Sub     string         `bson:"sub" json:"sub"`
+	Updated int64          `bson:"updated" json:"updated"`
 	Records []RecordSchema `bson:"records,omitempty" json:"records,omitempty"`
 }
 
