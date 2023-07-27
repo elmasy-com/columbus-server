@@ -13,18 +13,19 @@ import (
 )
 
 type Stat struct {
-	Date    int64      `json:"date"`
-	Total   int64      `json:"total"`
-	Updated int64      `json:"updated"`
-	Valid   int64      `json:"valid"`
-	m       sync.Mutex `json:"-"`
+	Date     int64              `json:"date"`
+	Total    int64              `json:"total"`
+	Updated  int64              `json:"updated"`
+	Valid    int64              `json:"valid"`
+	Scanners []db.ScannerSchema `json:"scanners"`
+	m        sync.Mutex         `json:"-"`
 }
 
 var (
 	Current Stat
 )
 
-func (s *Stat) Update(total, updated, valid int64) {
+func (s *Stat) Update(total, updated, valid int64, scanner []db.ScannerSchema) {
 
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -33,13 +34,14 @@ func (s *Stat) Update(total, updated, valid int64) {
 	s.Total = total
 	s.Updated = updated
 	s.Valid = valid
+	s.Scanners = scanner
 }
 
 func (s *Stat) Get() Stat {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return Stat{Date: s.Date, Total: s.Total, Updated: s.Updated, Valid: s.Valid}
+	return Stat{Date: s.Date, Total: s.Total, Updated: s.Updated, Valid: s.Valid, Scanners: s.Scanners}
 }
 
 func (s *Stat) IsEmpty() bool {
@@ -47,7 +49,7 @@ func (s *Stat) IsEmpty() bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return s.Date == 0 && s.Total == 0 && s.Valid == 0
+	return s.Date == 0 || s.Total == 0 || s.Valid == 0 || len(s.Scanners) == 0
 }
 
 // UpdateStat is created to run as a goroutine.
@@ -56,8 +58,9 @@ func (s *Stat) IsEmpty() bool {
 func UpdateStat() {
 
 	// Update stats at the beginning
-	if total, updated, valid, err := db.GetStat(); err == nil {
-		Current.Update(total, updated, valid)
+	total, updated, valid, scanners, err := db.GetStat()
+	if err == nil {
+		Current.Update(total, updated, valid, scanners)
 	} else {
 		fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 	}
@@ -66,8 +69,8 @@ func UpdateStat() {
 
 		time.Sleep(time.Duration(rand.Int63n(7200)+7200) * time.Second)
 
-		if total, updated, valid, err := db.GetStat(); err == nil {
-			Current.Update(total, updated, valid)
+		if total, updated, valid, scanners, err := db.GetStat(); err == nil {
+			Current.Update(total, updated, valid, scanners)
 		} else {
 			fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 		}

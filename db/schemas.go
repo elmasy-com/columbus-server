@@ -1,6 +1,11 @@
 package db
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/elmasy-com/elnet/ctlog"
+)
 
 // Schema used in *notFound* collection.
 type NotFoundSchema struct {
@@ -59,4 +64,28 @@ func (d *DomainSchema) String() string {
 // Returns the domain and tld only (eg.: domain.tld)
 func (d *DomainSchema) FullDomain() string {
 	return strings.Join([]string{d.Domain, d.TLD}, ".")
+}
+
+// Schema used in "scanner" collection
+type ScannerSchema struct {
+	Name  string `bson:"name" json:"name"`
+	Index int64  `bson:"index" json:"index"`
+	Total int64  `bson:"-" json:"total"`
+}
+
+func (s *ScannerSchema) UpdateTotal() error {
+
+	l := ctlog.LogByName(s.Name)
+	if l == nil {
+		return fmt.Errorf("invalid name")
+	}
+
+	total, err := ctlog.Size(l.URI)
+	if err != nil {
+		return fmt.Errorf("failed to get size: %w", err)
+	}
+
+	s.Total = total
+
+	return nil
 }
