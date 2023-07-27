@@ -53,9 +53,9 @@ func ScannerGetIndexes() ([]ScannerSchema, error) {
 			return nil, fmt.Errorf("failed to decode: %w", err)
 		}
 
-		err = sc.UpdateTotal()
+		err = sc.UpdateSize()
 		if err != nil {
-			return nil, fmt.Errorf("failed to update total of %s: %w", sc.Name, err)
+			return nil, fmt.Errorf("failed to update size of %s: %w", sc.Name, err)
 		}
 
 		scs = append(scs, *sc)

@@ -70,22 +70,22 @@ func (d *DomainSchema) FullDomain() string {
 type ScannerSchema struct {
 	Name  string `bson:"name" json:"name"`
 	Index int64  `bson:"index" json:"index"`
-	Total int64  `bson:"-" json:"total"`
+	Size  int64  `bson:"-" json:"size"`
 }
 
-func (s *ScannerSchema) UpdateTotal() error {
+func (s *ScannerSchema) UpdateSize() error {
 
 	l := ctlog.LogByName(s.Name)
 	if l == nil {
 		return fmt.Errorf("invalid name")
 	}
 
-	total, err := ctlog.Size(l.URI)
+	size, err := ctlog.Size(l.URI)
 	if err != nil {
 		return fmt.Errorf("failed to get size: %w", err)
 	}
 
-	s.Total = total
+	s.Size = size
 
 	return nil
 }
