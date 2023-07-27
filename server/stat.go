@@ -13,23 +13,25 @@ import (
 )
 
 type Stat struct {
-	Date  int64      `json:"date"`
-	Total int64      `json:"total"`
-	Valid int64      `json:"valid"`
-	m     sync.Mutex `json:"-"`
+	Date    int64      `json:"date"`
+	Total   int64      `json:"total"`
+	Updated int64      `json:"updated"`
+	Valid   int64      `json:"valid"`
+	m       sync.Mutex `json:"-"`
 }
 
 var (
 	Current Stat
 )
 
-func (s *Stat) Update(total, valid int64) {
+func (s *Stat) Update(total, updated, valid int64) {
 
 	s.m.Lock()
 	defer s.m.Unlock()
 
 	s.Date = time.Now().Unix()
 	s.Total = total
+	s.Updated = updated
 	s.Valid = valid
 }
 
@@ -37,31 +39,7 @@ func (s *Stat) Get() Stat {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	return Stat{Date: s.Date, Total: s.Total, Valid: s.Valid}
-}
-
-func (s *Stat) GetDate() int64 {
-
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	return s.Date
-}
-
-func (s *Stat) GetTotalNum() int64 {
-
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	return s.Total
-}
-
-func (s *Stat) GetValidNum() int64 {
-
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	return s.Valid
+	return Stat{Date: s.Date, Total: s.Total, Updated: s.Updated, Valid: s.Valid}
 }
 
 func (s *Stat) IsEmpty() bool {
@@ -78,8 +56,8 @@ func (s *Stat) IsEmpty() bool {
 func UpdateStat() {
 
 	// Update stats at the beginning
-	if total, valid, err := db.GetStat(); err == nil {
-		Current.Update(total, valid)
+	if total, updated, valid, err := db.GetStat(); err == nil {
+		Current.Update(total, updated, valid)
 	} else {
 		fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 	}
@@ -88,8 +66,8 @@ func UpdateStat() {
 
 		time.Sleep(time.Duration(rand.Int63n(7200)+7200) * time.Second)
 
-		if total, valid, err := db.GetStat(); err == nil {
-			Current.Update(total, valid)
+		if total, updated, valid, err := db.GetStat(); err == nil {
+			Current.Update(total, updated, valid)
 		} else {
 			fmt.Fprintf(os.Stderr, "Failed to get DB stat: %s\n", err)
 		}
