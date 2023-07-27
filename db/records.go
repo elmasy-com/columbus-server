@@ -25,6 +25,19 @@ var (
 	startTime                        time.Time
 )
 
+// increaseTotalUpdated add +1 to totalUpdated and print a status message.
+func increaseTotalUpdated() {
+
+	totalUpdated.Add(1)
+
+	if totalUpdated.Load()%100000 == 0 {
+		if totalUpdated.Load() != 0 {
+			fmt.Printf("Updated %d domain records in %s\n", totalUpdated.Load(), time.Since(startTime))
+		}
+	}
+
+}
+
 // RecordsUpdateUpdatedTime updated the "updated" timestamp to the current time.
 //
 // If d is invalid return fault.ErrInvalidDomain.
@@ -382,46 +395,43 @@ func recordsUpdaterRoutine(wg *sync.WaitGroup) {
 
 	for {
 
-		if totalUpdated.Load()%100000 == 0 {
-			if totalUpdated.Load() != 0 {
-				fmt.Printf("recordsUpdaterRoutine(): Updated %d domain records in %s\n", totalUpdated.Load(), time.Since(startTime))
-			}
-		}
+		var d string
 
 		select {
 		case dom := <-RecordsUpdaterDomainChan:
+			d = dom
 
-			// If dom has a subdomain, send it to internalRecordsUpdaterDomainChan without getting every entry
-			if dns.HasSub(dom) {
-				internalRecordsUpdaterDomainChan <- dom
+		case dom := <-internalRecordsUpdaterDomainChan:
+			d = dom
+		}
+
+		if dns.HasSub(d) {
+
+			increaseTotalUpdated()
+
+			// d is a FQDN
+			err := RecordsUpdate(d, true, false)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", d, err)
 			}
 
-			// Updates entries for domain dom.
-			ds, err := LookupFull(dom, -1)
+		} else {
+
+			// If domain sent instead of FQDN, get every subdomain and updates it
+			ds, err := LookupFull(d, -1)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "recordsUpdaterRoutine() failed to lookup full for %s: %s\n", dom, err)
+				fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", d, err)
 				continue
 			}
 
 			for i := range ds {
 
-				totalUpdated.Add(1)
+				increaseTotalUpdated()
 
-				// d is a FQDN
 				err := RecordsUpdate(ds[i], true, false)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", ds[i], err)
 				}
-			}
-
-		case dom := <-internalRecordsUpdaterDomainChan:
-
-			totalUpdated.Add(1)
-
-			// d is a FQDN
-			err := RecordsUpdate(dom, true, false)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", dom, err)
 			}
 		}
 	}
