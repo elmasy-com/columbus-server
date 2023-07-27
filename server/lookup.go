@@ -40,7 +40,7 @@ func LookupGet(c *gin.Context) {
 	// Parse days query param
 	days, err := getQueryDays(c)
 	if err != nil {
-		c.Error(fault.ErrInvalidDays)
+		c.Error(err)
 		if c.GetHeader("Accept") == "text/plain" {
 			c.String(http.StatusBadRequest, fault.ErrInvalidDays.Err)
 		} else {
@@ -93,6 +93,7 @@ func LookupGet(c *gin.Context) {
 
 	// Send to db.RecordsUpdaterDomainChan if the channle if not full to update the DNS records.
 	// Send only if any subdomain found.
+	// In db.RecordsUpdaterDomainChan, every record for domain d is updated if not updated in the last hour.
 	if len(db.RecordsUpdaterDomainChan) < cap(db.RecordsUpdaterDomainChan) {
 		db.RecordsUpdaterDomainChan <- d
 	}
@@ -253,6 +254,7 @@ func HistoryGet(c *gin.Context) {
 	}
 
 	// Send to db.RecordsUpdaterDomainChan if the channle if not full to update records.
+	// In db.RecordsUpdaterDomainChan, every record for domain d is updated if not updated in the last hour.
 	if len(db.RecordsUpdaterDomainChan) < cap(db.RecordsUpdaterDomainChan) {
 		db.RecordsUpdaterDomainChan <- d
 	}
