@@ -25,6 +25,58 @@ var (
 	startTime                        time.Time
 )
 
+// RecordsUpdateUpdatedTime updated the "updated" timestamp to the current time.
+//
+// If d is invalid return fault.ErrInvalidDomain.
+// If failed to get parts of d (eg.: d is a TLD), returns fault.ErrGetPartsFailed.
+func RecordsUpdateUpdatedTime(d string) error {
+
+	if !valid.Domain(d) {
+		return fault.ErrInvalidDomain
+	}
+
+	d = dns.Clean(d)
+
+	p := dns.GetParts(d)
+	if p == nil || p.Domain == "" || p.TLD == "" {
+		return fault.ErrGetPartsFailed
+	}
+
+	filter := bson.D{{Key: "domain", Value: p.Domain}, {Key: "tld", Value: p.TLD}, {Key: "sub", Value: p.Sub}}
+
+	up := bson.D{{Key: "$set", Value: bson.D{{Key: "updated", Value: time.Now().Unix()}}}}
+
+	_, err := Domains.UpdateOne(context.TODO(), filter, up)
+
+	return err
+}
+
+// RecordsUpdatedRecently check whether domain d is updated recently (in the previous hour).
+//
+// If d is invalid return fault.ErrInvalidDomain.
+// If failed to get parts of d (eg.: d is a TLD), returns fault.ErrGetPartsFailed.
+func RecordsUpdatedRecently(d string) (bool, error) {
+
+	if !valid.Domain(d) {
+		return false, fault.ErrInvalidDomain
+	}
+
+	d = dns.Clean(d)
+
+	p := dns.GetParts(d)
+	if p == nil || p.Domain == "" || p.TLD == "" {
+		return false, fault.ErrGetPartsFailed
+	}
+
+	filter := bson.D{{Key: "domain", Value: p.Domain}, {Key: "tld", Value: p.TLD}, {Key: "sub", Value: p.Sub}}
+
+	dom := new(DomainSchema)
+
+	err := Domains.FindOne(context.TODO(), filter).Decode(dom)
+
+	return dom.Updated > time.Now().Unix()-3600, err
+}
+
 // Update type t records for d.
 // Check if domain d is a wildcard t type record.
 // This function updates the DB.
@@ -149,23 +201,41 @@ func recordsUpdateRecord(d string, t uint16) error {
 	return nil
 }
 
-// RecordsUpdate updates the records field for domain d.
-// This function updates the records in the database.
+// RecordsUpdate updates the records field for domain d if d is not update recently (in the previous hour).
+// This function updates the "updated" field to the current time and the records in the database.
 // If the same record found, updates the "time" field in element.
 // If new record found, append it to the "records" field.
 //
 // Checks if d is a wildcard record before update.
 //
-// If ignore is true, common DNS errors are ignored.
+// If ignoreError is true, common DNS errors are ignored.
+// If ignoreUpdated is true, ignore when was the last update based on the "updated" timestamp.
 //
 // If domain d is invalid, returns fault.ErrInvalidDomain.
 // If failed to get parts of d (eg.: d is a TLD), returns fault.ErrGetPartsFailed.
-func RecordsUpdate(d string, ignore bool) error {
+func RecordsUpdate(d string, ignoreError bool, ignoreUpdated bool) error {
 
-	err := recordsUpdateRecord(d, dns.TypeA)
+	if !ignoreUpdated {
+
+		updated, err := RecordsUpdatedRecently(d)
+		if err != nil {
+			return fmt.Errorf("failed to check if %s is updated recently: %w", d, err)
+		}
+
+		if updated {
+			return nil
+		}
+	}
+
+	err := RecordsUpdateUpdatedTime(d)
+	if err != nil {
+		return fmt.Errorf("failed to update %s updated time: %w", d, err)
+	}
+
+	err = recordsUpdateRecord(d, dns.TypeA)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update A: %w", err)
 		}
 
@@ -179,7 +249,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeAAAA)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update AAAA: %w", err)
 		}
 
@@ -193,7 +263,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeCAA)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update CAA: %w", err)
 		}
 
@@ -207,7 +277,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeCNAME)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update CNAME: %w", err)
 		}
 
@@ -221,7 +291,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeDNAME)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update DNAME: %w", err)
 		}
 
@@ -234,7 +304,7 @@ func RecordsUpdate(d string, ignore bool) error {
 
 	err = recordsUpdateRecord(d, dns.TypeMX)
 	if err != nil {
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update MX: %w", err)
 		}
 
@@ -248,7 +318,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeNS)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update NS: %w", err)
 		}
 
@@ -262,7 +332,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeSOA)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update SOA: %w", err)
 		}
 
@@ -276,7 +346,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeSRV)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update SRV: %w", err)
 		}
 
@@ -290,7 +360,7 @@ func RecordsUpdate(d string, ignore bool) error {
 	err = recordsUpdateRecord(d, dns.TypeTXT)
 	if err != nil {
 
-		if !ignore {
+		if !ignoreError {
 			return fmt.Errorf("failed to update TXT: %w", err)
 		}
 
@@ -318,57 +388,54 @@ func recordsUpdaterRoutine(wg *sync.WaitGroup) {
 			}
 		}
 
-		var d string
-
 		select {
 		case dom := <-RecordsUpdaterDomainChan:
-			d = dom
+
+			// If dom has a subdomain, send it to internalRecordsUpdaterDomainChan without getting every entry
+			if dns.HasSub(dom) {
+				internalRecordsUpdaterDomainChan <- dom
+			}
+
+			// Updates entries for domain dom.
+			ds, err := LookupFull(dom, -1)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "recordsUpdaterRoutine() failed to lookup full for %s: %s\n", dom, err)
+				continue
+			}
+
+			for i := range ds {
+
+				totalUpdated.Add(1)
+
+				// d is a FQDN
+				err := RecordsUpdate(ds[i], true, false)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", ds[i], err)
+				}
+			}
 
 		case dom := <-internalRecordsUpdaterDomainChan:
-			d = dom
-		}
-
-		if dns.HasSub(d) {
 
 			totalUpdated.Add(1)
 
 			// d is a FQDN
-			err := RecordsUpdate(d, true)
+			err := RecordsUpdate(dom, true, false)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", d, err)
-			}
-
-		} else {
-
-			// If domain sent instead of FQDN, get every subdomain and updates it
-			ds, err := LookupFull(d, -1)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", d, err)
-				continue
-			}
-
-			totalUpdated.Add(uint64(len(ds)))
-
-			for i := range ds {
-
-				err := RecordsUpdate(ds[i], true)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", ds[i], err)
-				}
+				fmt.Fprintf(os.Stderr, "Failed to update DNS records for %s: %s\n", dom, err)
 			}
 		}
 	}
 }
 
 // RandomDomainUpdater is a function created to run as goroutine in the background.
-// Select random entries (FQDNs) and send it to internalDomainChan to update the records.
+// Select random entries (FQDNs) and send it to internalRecordsUpdaterDomainChan to update the records.
 func RandomDomainUpdater(wg *sync.WaitGroup) {
 
 	defer wg.Done()
 
 	for {
 
-		cursor, err := Domains.Aggregate(context.TODO(), bson.A{bson.M{"$sample": bson.M{"size": 1000}}}, options.Aggregate().SetBatchSize(1000))
+		cursor, err := Domains.Aggregate(context.TODO(), bson.A{bson.M{"$sample": bson.M{"size": 1000}}})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "RandomDomainUpdater() failed to find toplist: %s\n", err)
 			// Wait before the next try
@@ -386,9 +453,8 @@ func RandomDomainUpdater(wg *sync.WaitGroup) {
 				break
 			}
 
-			// Skip verified domain for now.
-			// TODO: Remove later
-			if len(d.Records) > 0 {
+			// TODO: Remove
+			if d.Updated != 0 {
 				continue
 			}
 
@@ -405,7 +471,7 @@ func RandomDomainUpdater(wg *sync.WaitGroup) {
 }
 
 // TopListUpdater is a function created to run as goroutine in the background.
-// Updates the domains and it subdomains in topList collection.
+// Updates the domains and it subdomains in topList collection by sending every entries into internalRecordsUpdaterDomainChan.
 // This function uses concurrent goroutines and print only/ignores any error.
 func TopListUpdater(wg *sync.WaitGroup) {
 
@@ -433,7 +499,15 @@ func TopListUpdater(wg *sync.WaitGroup) {
 				break
 			}
 
-			internalRecordsUpdaterDomainChan <- d.Domain
+			ds, err := LookupFull(d.Domain, -1)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "TopListUpdater() failed to lookup full for %s: %s\n", d.Domain, err)
+				continue
+			}
+
+			for i := range ds {
+				internalRecordsUpdaterDomainChan <- ds[i]
+			}
 
 		}
 
