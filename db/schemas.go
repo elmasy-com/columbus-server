@@ -1,10 +1,7 @@
 package db
 
 import (
-	"fmt"
 	"strings"
-
-	"github.com/elmasy-com/elnet/ctlog"
 )
 
 // Schema used in *notFound* collection.
@@ -70,22 +67,13 @@ func (d *DomainSchema) FullDomain() string {
 type ScannerSchema struct {
 	Name  string `bson:"name" json:"name"`
 	Index int64  `bson:"index" json:"index"`
-	Size  int64  `bson:"-" json:"size"`
+	Size  int64  `bson:"size" json:"size"`
 }
 
-func (s *ScannerSchema) UpdateSize() error {
-
-	l := ctlog.LogByName(s.Name)
-	if l == nil {
-		return fmt.Errorf("invalid name")
-	}
-
-	size, err := ctlog.Size(l.URI)
-	if err != nil {
-		return fmt.Errorf("failed to get size: %w", err)
-	}
-
-	s.Size = size
-
-	return nil
+type StatSchema struct {
+	Date     int64           `bson:"date" json:"date"`
+	Total    int64           `bson:"total" json:"total"`
+	Updated  int64           `bsn:"updated" json:"updated"`
+	Valid    int64           `bson:"valid" json:"valid"`
+	Scanners []ScannerSchema `bson:"scanners" json:"scanners"`
 }

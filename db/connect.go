@@ -15,6 +15,7 @@ var (
 	NotFound *mongo.Collection // Store domains that not found by Lookup
 	TopList  *mongo.Collection // Store and count successful lookups
 	Scanner  *mongo.Collection // Store informations about CT scanners
+	Stats    *mongo.Collection // Store stats history
 )
 
 // Connect connects to the database using the standard Connection URI.
@@ -36,6 +37,7 @@ func Connect(uri string) error {
 	NotFound = Client.Database("columbus").Collection("notFound")
 	TopList = Client.Database("columbus").Collection("topList")
 	Scanner = Client.Database("columbus").Collection("scanner")
+	Stats = Client.Database("columbus").Collection("stats")
 
 	return nil
 }
