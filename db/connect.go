@@ -11,11 +11,11 @@ import (
 var (
 	Client *mongo.Client
 
-	Domains  *mongo.Collection // The main collection to store the entries
-	NotFound *mongo.Collection // Store domains that not found by Lookup
-	TopList  *mongo.Collection // Store and count successful lookups
-	CTLogs   *mongo.Collection // Store informations about CT Logs
-	Stats    *mongo.Collection // Store stats history
+	Domains    *mongo.Collection // The main collection to store the entries
+	NotFound   *mongo.Collection // Store domains that not found by Lookup
+	TopList    *mongo.Collection // Store and count successful lookups
+	CTLogs     *mongo.Collection // Store informations about CT Logs
+	Statistics *mongo.Collection // Store statistics history
 )
 
 // Connect connects to the database using the standard Connection URI.
@@ -37,7 +37,7 @@ func Connect(uri string) error {
 	NotFound = Client.Database("columbus").Collection("notFound")
 	TopList = Client.Database("columbus").Collection("topList")
 	CTLogs = Client.Database("columbus").Collection("ctlogs")
-	Stats = Client.Database("columbus").Collection("stats")
+	Statistics = Client.Database("columbus").Collection("statistics")
 
 	return nil
 }

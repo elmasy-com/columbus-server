@@ -70,7 +70,7 @@ type CTLogSchema struct {
 	Size  int64  `bson:"size" json:"size"`
 }
 
-type StatSchema struct {
+type StatisticSchema struct {
 	Date    int64         `bson:"date" json:"date"`
 	Total   int64         `bson:"total" json:"total"`
 	Updated int64         `bsn:"updated" json:"updated"`

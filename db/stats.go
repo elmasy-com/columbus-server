@@ -12,46 +12,46 @@ import (
 )
 
 const (
-	MaxStatsEntry = 100
+	MaxStatisticsEntry = 100
 )
 
-// StatsCountTotal returns the total number of entries in "domain" collection.
-func StatsCountTotal() (int64, error) {
+// StatisticsCountTotal returns the total number of entries in "domain" collection.
+func StatisticsCountTotal() (int64, error) {
 
 	return Domains.CountDocuments(context.TODO(), bson.M{})
 }
 
-// StatsCountUpdated returns the total number of entries that updated in "domain" collection.
-func StatsCountUpdated() (int64, error) {
+// StatisticsCountUpdated returns the total number of entries that updated in "domain" collection.
+func StatisticsCountUpdated() (int64, error) {
 
 	return Domains.CountDocuments(context.TODO(), bson.M{"updated": bson.M{"$exists": true}})
 }
 
-// StatsCountValid returns the total number of entries that has at least on valid record in the "records" field in "domain" collection.
-func StatsCountValid() (int64, error) {
+// StatisticsCountValid returns the total number of entries that has at least on valid record in the "records" field in "domain" collection.
+func StatisticsCountValid() (int64, error) {
 
 	return Domains.CountDocuments(context.TODO(), bson.M{"records": bson.M{"$exists": true}})
 }
 
-// StatsInsert get the stats and insert a new entry in the "stats" collection.
+// StatisticsInsert get the stats and insert a new entry in the "statistics" collection.
 //
 // This function is **very** slow!
-func StatsInsert() error {
+func StatisticsInsert() error {
 
-	s := new(StatSchema)
+	s := new(StatisticSchema)
 	var err error
 
-	s.Total, err = StatsCountTotal()
+	s.Total, err = StatisticsCountTotal()
 	if err != nil {
 		return fmt.Errorf("failed to count total: %w", err)
 	}
 
-	s.Updated, err = StatsCountUpdated()
+	s.Updated, err = StatisticsCountUpdated()
 	if err != nil {
 		return fmt.Errorf("failed to count updated: %w", err)
 	}
 
-	s.Valid, err = StatsCountValid()
+	s.Valid, err = StatisticsCountValid()
 	if err != nil {
 		return fmt.Errorf("failed to count valid: %w", err)
 	}
@@ -63,38 +63,38 @@ func StatsInsert() error {
 
 	s.Date = time.Now().Unix()
 
-	_, err = Stats.InsertOne(context.TODO(), *s)
+	_, err = Statistics.InsertOne(context.TODO(), *s)
 
 	return err
 }
 
-// StatsInsertWorker insert a new stat entry at the beginning and at a random time in an infinite loop.
+// StatisticsInsertWorker insert a new Statistic entry at the beginning and at a random time in an infinite loop.
 //
 // This function is designed to run as a goroutine in the background.
 // The errors are printed to STDERR.
-func StatsInsertWorker() {
+func StatisticsInsertWorker() {
 
-	err := StatsInsert()
+	err := StatisticsInsert()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to insert new stat entry: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to insert new statistic entry: %s\n", err)
 	}
 
 	for {
 
 		time.Sleep(time.Duration(rand.Int63n(7200)+7200) * time.Second)
 
-		err := StatsInsert()
+		err := StatisticsInsert()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to insert new stat entry: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to insert new statistics entry: %s\n", err)
 		}
 	}
 }
 
-// StatsCleanWorker removes entries beyond MaxStatsEntry number.
+// StatisticsCleanWorker removes entries beyond MaxStatisticsEntry number.
 //
 // This function is designed to run as a goroutine in the background.
 // The errors are printed to STDERR.
-func StatsCleanWorker() {
+func StatisticsCleanWorker() {
 
 	// Random sleep
 	time.Sleep(time.Duration(rand.Int63n(7200)) * time.Second)
@@ -103,48 +103,48 @@ func StatsCleanWorker() {
 
 	for range t {
 
-		n, err := Stats.CountDocuments(context.TODO(), bson.M{})
+		n, err := Statistics.CountDocuments(context.TODO(), bson.M{})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "StatsRemoveOldEntries(): Failed to count total stat entries: %s\n", err)
+			fmt.Fprintf(os.Stderr, "StatisticsRemoveOldEntries(): Failed to count total statistic entries: %s\n", err)
 			continue
 		}
 
-		if n <= MaxStatsEntry {
+		if n <= MaxStatisticsEntry {
 			continue
 		}
 
 		i := 0
 
-		cursor, err := Stats.Find(context.TODO(), bson.M{})
+		cursor, err := Statistics.Find(context.TODO(), bson.M{})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "StatsRemoveOldEntries(): Failed to find stat entries: %s\n", err)
+			fmt.Fprintf(os.Stderr, "StatisticsRemoveOldEntries(): Failed to find statistic entries: %s\n", err)
 			continue
 		}
 
 		for cursor.Next(context.TODO()) {
 
-			if i <= MaxStatsEntry {
+			if i <= MaxStatisticsEntry {
 				i++
 				continue
 			}
 
-			s := new(StatSchema)
+			s := new(StatisticSchema)
 
 			err = cursor.Decode(s)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "StatsRemoveOldEntries(): Failed to decode: %s\n", err)
+				fmt.Fprintf(os.Stderr, "StatisticsRemoveOldEntries(): Failed to decode: %s\n", err)
 				continue
 			}
 
-			_, err := Stats.DeleteOne(context.TODO(), *s)
+			_, err := Statistics.DeleteOne(context.TODO(), *s)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "StatsRemoveOldEntries(): Failed to remove stat entry (date: %d, total: %d, updated: %d, valid: %d): %s\n", s.Date, s.Total, s.Updated, s.Valid, err)
+				fmt.Fprintf(os.Stderr, "StatisticsRemoveOldEntries(): Failed to remove entry (date: %d, total: %d, updated: %d, valid: %d): %s\n", s.Date, s.Total, s.Updated, s.Valid, err)
 			}
 		}
 
 		err = cursor.Err()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "StatsRemoveOldEntries(): Cursor failed: %s\n", err)
+			fmt.Fprintf(os.Stderr, "StatisticsRemoveOldEntries(): Cursor failed: %s\n", err)
 		}
 
 		cursor.Close(context.TODO())
@@ -152,12 +152,12 @@ func StatsCleanWorker() {
 	}
 }
 
-// StatsGetNewest returns the newest entry from the "stats" collection.
-func StatsGetNewest() (StatSchema, error) {
+// StatisticsGetNewest returns the newest entry from the "statistics" collection.
+func StatisticsGetNewest() (StatisticSchema, error) {
 
-	s := new(StatSchema)
+	s := new(StatisticSchema)
 
-	err := Stats.FindOne(context.TODO(), bson.M{}, options.FindOne().SetSort(bson.M{"date": -1})).Decode(s)
+	err := Statistics.FindOne(context.TODO(), bson.M{}, options.FindOne().SetSort(bson.M{"date": -1})).Decode(s)
 
 	return *s, err
 }

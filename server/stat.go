@@ -9,7 +9,7 @@ import (
 
 func StatGet(c *gin.Context) {
 
-	s, err := db.StatsGetNewest()
+	s, err := db.StatisticsGetNewest()
 	if err != nil {
 		c.Error(err)
 

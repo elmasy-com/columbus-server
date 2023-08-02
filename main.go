@@ -97,11 +97,11 @@ func main() {
 	}
 	defer db.Disconnect()
 
-	fmt.Printf("Starting db.StatsInsertWorker...\n")
-	go db.StatsInsertWorker()
+	fmt.Printf("Starting db.StatisticsInsertWorker...\n")
+	go db.StatisticsInsertWorker()
 
-	fmt.Printf("Starting db.StatsCleanWorker...\n")
-	go db.StatsCleanWorker()
+	fmt.Printf("Starting db.StatisticsCleanWorker...\n")
+	go db.StatisticsCleanWorker()
 
 	fmt.Printf("Starting RecordUpdater...\n")
 	go db.RecordsUpdater()
