@@ -15,6 +15,10 @@ github.com/elmasy-com/elnet v0.0.0-20230727160323-ad9d8e68c93d h1:sLofYv9Yxu1vre
 github.com/elmasy-com/elnet v0.0.0-20230727160323-ad9d8e68c93d/go.mod h1:V5/S6VD6E6LUP6WtNsqxFln/XXu4rvKuPDlOdnGfCaE=
 github.com/elmasy-com/elnet v0.0.0-20230727162548-d110ab87f31f h1:UXhjVtlLk6vWY6vCtljaWotfzTGZ59s0JWiC/h4zYPA=
 github.com/elmasy-com/elnet v0.0.0-20230727162548-d110ab87f31f/go.mod h1:V5/S6VD6E6LUP6WtNsqxFln/XXu4rvKuPDlOdnGfCaE=
+github.com/elmasy-com/elnet v0.0.0-20230802043925-9f6281578133 h1:08tMiyVWN2JeO97a5oh3dJrP10FaR1gHMtz3oUU514k=
+github.com/elmasy-com/elnet v0.0.0-20230802043925-9f6281578133/go.mod h1:V5/S6VD6E6LUP6WtNsqxFln/XXu4rvKuPDlOdnGfCaE=
+github.com/elmasy-com/elnet v0.0.0-20230802051435-e92f8aae62dd h1:dArMJtdWkg9rcRSU3+nWWAWGGAIPAqo0WhEkZmKU8g8=
+github.com/elmasy-com/elnet v0.0.0-20230802051435-e92f8aae62dd/go.mod h1:V5/S6VD6E6LUP6WtNsqxFln/XXu4rvKuPDlOdnGfCaE=
 github.com/elmasy-com/identify v1.1.0 h1:RWW4FE+6gRpt9lATAyRojwsDiC/hLgO3B9TDdl98sbA=
 github.com/elmasy-com/identify v1.1.0/go.mod h1:RNwFDjyTfqXDvasuNI/PM4s4M7mmH7SsZfMxUDLQkC4=
 github.com/elmasy-com/slices v0.0.0-20230712174526-6eb4e5e38b73 h1:9I1IZOvF7XurN0VQiUn23i3o7vY6Gm8+RZBK2iEBtpQ=
