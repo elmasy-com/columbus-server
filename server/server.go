@@ -12,6 +12,7 @@ import (
 
 	"github.com/elmasy-com/columbus-server/config"
 	"github.com/elmasy-com/columbus-server/server/lookup"
+	"github.com/elmasy-com/columbus-server/server/search"
 	"github.com/elmasy-com/columbus-server/server/stat"
 
 	"github.com/gin-gonic/gin"
@@ -64,13 +65,18 @@ func Run() error {
 	router.GET("/api/stat", stat.GetApiStat)
 	router.GET("/stat", stat.GetStat)
 
+	router.GET("/search", search.GetSearch)
+	router.GET("/search/:domain", search.GetSearchResult)
+
 	router.GET("/api/tools/tld/:fqdn", ToolsTLDGet)
 	router.GET("/api/tools/domain/:fqdn", ToolsDomainGet)
 	router.GET("/api/tools/subdomain/:fqdn", ToolsSubdomainGet)
 	router.GET("/api/tools/isvalid/:fqdn", ToolsIsValidGet)
 
+	// Redirect to /search/:domain
+	router.GET("/lookup/:domain", RedirectLookup)
+
 	// Permanent Redirect
-	router.GET("/lookup/:domain", Redirect)
 	router.GET("/tld/:domain", Redirect)
 	router.GET("/tools/tld/:fqdn", Redirect)
 	router.GET("/tools/domain/:fqdn", Redirect)
