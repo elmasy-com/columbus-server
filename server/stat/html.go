@@ -60,7 +60,7 @@ func parseStatistic() (statistics, error) {
 
 	var stat statistics
 
-	// The first element is the slice is the newest entry
+	// The first element in the slice is the newest entry
 	stat.Date = time.Unix(s[0].Date, 0).String()
 	stat.Total = printer.Sprint(s[0].Total)
 	stat.Updated = printer.Sprint(s[0].Updated)
