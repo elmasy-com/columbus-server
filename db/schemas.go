@@ -63,17 +63,17 @@ func (d *DomainSchema) FullDomain() string {
 	return strings.Join([]string{d.Domain, d.TLD}, ".")
 }
 
-// Schema used in "scanner" collection
-type ScannerSchema struct {
+// Schema used in "ctlogs" collection
+type CTLogSchema struct {
 	Name  string `bson:"name" json:"name"`
 	Index int64  `bson:"index" json:"index"`
 	Size  int64  `bson:"size" json:"size"`
 }
 
 type StatSchema struct {
-	Date     int64           `bson:"date" json:"date"`
-	Total    int64           `bson:"total" json:"total"`
-	Updated  int64           `bsn:"updated" json:"updated"`
-	Valid    int64           `bson:"valid" json:"valid"`
-	Scanners []ScannerSchema `bson:"scanners" json:"scanners"`
+	Date    int64         `bson:"date" json:"date"`
+	Total   int64         `bson:"total" json:"total"`
+	Updated int64         `bsn:"updated" json:"updated"`
+	Valid   int64         `bson:"valid" json:"valid"`
+	CTLogs  []CTLogSchema `bson:"ctlogs" json:"ctlogs"`
 }

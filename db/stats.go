@@ -56,9 +56,9 @@ func StatsInsert() error {
 		return fmt.Errorf("failed to count valid: %w", err)
 	}
 
-	s.Scanners, err = ScannerGets()
+	s.CTLogs, err = CTLogsGets()
 	if err != nil {
-		return fmt.Errorf("failed to get scanners: %w", err)
+		return fmt.Errorf("failed to get CT logs: %w", err)
 	}
 
 	s.Date = time.Now().Unix()
