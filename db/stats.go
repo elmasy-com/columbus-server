@@ -81,7 +81,7 @@ func StatisticsInsertWorker() {
 
 	for {
 
-		time.Sleep(time.Duration(rand.Int63n(7200)+7200) * time.Second)
+		time.Sleep(time.Duration(rand.Int63n(14400)) * time.Second)
 
 		err := StatisticsInsert()
 		if err != nil {
@@ -96,10 +96,7 @@ func StatisticsInsertWorker() {
 // The errors are printed to STDERR.
 func StatisticsCleanWorker() {
 
-	// Random sleep
-	time.Sleep(time.Duration(rand.Int63n(7200)) * time.Second)
-
-	t := time.Tick(3600 * time.Second)
+	t := time.Tick(60 * time.Second)
 
 	for range t {
 
@@ -160,4 +157,35 @@ func StatisticsGetNewest() (StatisticSchema, error) {
 	err := Statistics.FindOne(context.TODO(), bson.M{}, options.FindOne().SetSort(bson.M{"date": -1})).Decode(s)
 
 	return *s, err
+}
+
+// StatisticsGets returns every entry in the "statistics".
+func StatisticsGets() ([]StatisticSchema, error) {
+
+	cursor, err := Statistics.Find(context.TODO(), bson.M{}, options.Find().SetSort(bson.M{"date": -1}))
+	if err != nil {
+		return nil, fmt.Errorf("failed to find: %w", err)
+	}
+	defer cursor.Close(context.TODO())
+
+	r := make([]StatisticSchema, 0, MaxStatisticsEntry)
+
+	for cursor.Next(context.TODO()) {
+
+		s := new(StatisticSchema)
+
+		err = cursor.Decode(s)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode: %w", err)
+		}
+
+		r = append(r, *s)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		return nil, fmt.Errorf("cursor failed: %w", err)
+	}
+
+	return r, nil
 }
