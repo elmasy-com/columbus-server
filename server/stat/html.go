@@ -23,6 +23,16 @@ type ctLog struct {
 	CompletePercent float64
 }
 
+type historyStat struct {
+	Num           string
+	Date          string
+	Total         string
+	Updated       string
+	Valid         string
+	CTLogTotalInt int64
+	CTLogTotal    string
+}
+
 type statistics struct {
 	Date           string
 	Total          string
@@ -33,47 +43,84 @@ type statistics struct {
 	CTTotalInt     int64
 	CTTotal        string
 	CTLogs         []ctLog
+	History        []historyStat
 }
 
 //go:embed stat.html
 var statHtml string
 
-func GetStat(c *gin.Context) {
+func parseStatistic() (statistics, error) {
 
-	s, err := db.StatisticsGetNewest()
+	s, err := db.StatisticsGets()
 	if err != nil {
-		c.Error(fmt.Errorf("failed to get newset statistic: %w", err))
-		c.String(http.StatusInternalServerError, "internal server error")
-		return
+		return statistics{}, fmt.Errorf("failed to get newset statistic: %w", err)
 	}
 
 	printer := message.NewPrinter(language.English)
 
 	var stat statistics
 
-	stat.Date = time.Unix(s.Date, 0).String()
-	stat.Total = printer.Sprint(s.Total)
-	stat.Updated = printer.Sprint(s.Updated)
-	stat.UpdatedPercent = fmt.Sprintf("%.2f%%", float64(s.Updated)/float64(s.Total)*100)
-	stat.Valid = printer.Sprint(s.Valid)
-	stat.ValidPercent = fmt.Sprintf("%.2f%%", float64(s.Valid)/float64(s.Total)*100)
+	// The first element is the slice is the newest entry
+	stat.Date = time.Unix(s[0].Date, 0).String()
+	stat.Total = printer.Sprint(s[0].Total)
+	stat.Updated = printer.Sprint(s[0].Updated)
+	stat.UpdatedPercent = fmt.Sprintf("%.2f%%", float64(s[0].Updated)/float64(s[0].Total)*100)
+	stat.Valid = printer.Sprint(s[0].Valid)
+	stat.ValidPercent = fmt.Sprintf("%.2f%%", float64(s[0].Valid)/float64(s[0].Total)*100)
 
-	stat.CTLogs = make([]ctLog, len(s.CTLogs))
+	stat.CTLogs = make([]ctLog, len(s[0].CTLogs))
 
-	for i := range s.CTLogs {
-		stat.CTLogs[i].Name = s.CTLogs[i].Name
-		stat.CTLogs[i].Index = printer.Sprint(s.CTLogs[i].Index)
-		stat.CTLogs[i].Size = printer.Sprint(s.CTLogs[i].Size)
-		stat.CTLogs[i].Remaining = printer.Sprint(s.CTLogs[i].Size - s.CTLogs[i].Index)
-		stat.CTLogs[i].CompletePercent = float64(s.CTLogs[i].Index) / float64(s.CTLogs[i].Size) * 100
+	for i := range s[0].CTLogs {
+		stat.CTLogs[i].Name = s[0].CTLogs[i].Name
+		stat.CTLogs[i].Index = printer.Sprint(s[0].CTLogs[i].Index)
+		stat.CTLogs[i].Size = printer.Sprint(s[0].CTLogs[i].Size)
+		stat.CTLogs[i].Remaining = printer.Sprint(s[0].CTLogs[i].Size - s[0].CTLogs[i].Index)
+		stat.CTLogs[i].CompletePercent = float64(s[0].CTLogs[i].Index) / float64(s[0].CTLogs[i].Size) * 100
 		stat.CTLogs[i].Complete = fmt.Sprintf("%7.2f%%", stat.CTLogs[i].CompletePercent)
 
-		stat.CTTotalInt += s.CTLogs[i].Size
+		stat.CTTotalInt += s[0].CTLogs[i].Size
 	}
 
 	stat.CTTotal = printer.Sprint(stat.CTTotalInt)
 
 	sort.Slice(stat.CTLogs, func(i, j int) bool { return stat.CTLogs[i].CompletePercent > stat.CTLogs[j].CompletePercent })
+
+	// The remaining elements are the history
+	hs := s[1:]
+
+	hNum := 1
+
+	stat.History = make([]historyStat, len(hs))
+
+	for i := range hs {
+
+		stat.History[i].Num = printer.Sprint(hNum)
+		stat.History[i].Date = time.Unix(hs[i].Date, 0).String()
+
+		stat.History[i].Total = printer.Sprint(hs[i].Total)
+		stat.History[i].Updated = printer.Sprint(hs[i].Updated)
+		stat.History[i].Valid = printer.Sprint(hs[i].Valid)
+
+		for ii := range hs[i].CTLogs {
+			stat.History[i].CTLogTotalInt += hs[i].CTLogs[ii].Size
+		}
+
+		stat.History[i].CTLogTotal = printer.Sprint(stat.History[i].CTLogTotalInt)
+
+		hNum++
+	}
+
+	return stat, nil
+}
+
+func GetStat(c *gin.Context) {
+
+	stat, err := parseStatistic()
+	if err != nil {
+		c.Error(fmt.Errorf("failed to parse statistic: %w", err))
+		c.String(http.StatusInternalServerError, "internal server error")
+		return
+	}
 
 	t := template.New("stat")
 

@@ -75,15 +75,15 @@
                     <div class="navbar-menu has-content-centered" id="navMenu">
 
                         <a class="navbar-item" href="/">
-
                             Home
+                        </a>
 
+                        <a class="navbar-item" href="/stat#history">
+                            History
                         </a>
 
                         <a class="navbar-item" href="/swagger/">
-
                             API Documentation
-
                         </a>
 
                     </div>
@@ -93,9 +93,9 @@
         </div>
     </section>
 
-    <div class="section" id="stat">
+    <div class="section" id="current">
         <div class="container">
-            <h2 class="title is-2 has-text-centered">Statistic</h2>
+            <h2 class="title is-2 has-text-centered">Statistics</h2>
 
             <div class="columns">
                 <div class="column is-one-third has-text-centered">
@@ -141,6 +141,42 @@
         </div>
     </div>
 
+    <div class="container">
+        <hr>
+    </div>
+
+    <div class="section" id="history">
+        <div class="container">
+            <h2 class="title is-2 has-text-centered">History</h2>
+
+            <p></p>
+
+            <div class="markdown has-text-centered">
+                <table>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Updated</th>
+                        <th>Valid</th>
+                        <th>CT Logs</th>
+                    </tr>
+
+                    {{ range .History }}
+                    <tr>
+                        <td>{{ .Num }}</td>
+                        <td>{{ .Date }}</td>
+                        <td>{{ .Total }}</td>
+                        <td>{{ .Updated }}</td>
+                        <td>{{ .Valid }}</td>
+                        <td>{{ .CTLogTotal }}</td>
+                    </tr>
+                    {{ end }}
+                </table>
+            </div>
+        </div>
+
+    </div>
     <div class="container">
         <hr>
     </div>
