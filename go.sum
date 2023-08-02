@@ -13,6 +13,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/elmasy-com/elnet v0.0.0-20230802051435-e92f8aae62dd h1:dArMJtdWkg9rcRSU3+nWWAWGGAIPAqo0WhEkZmKU8g8=
 github.com/elmasy-com/elnet v0.0.0-20230802051435-e92f8aae62dd/go.mod h1:V5/S6VD6E6LUP6WtNsqxFln/XXu4rvKuPDlOdnGfCaE=
+github.com/elmasy-com/elnet v0.0.0-20230802113148-1a44aa92b75c h1:zqp3JN/F6ruJpnfqms+DCEm0ZRUIUwtEMsvZxFNpgWI=
+github.com/elmasy-com/elnet v0.0.0-20230802113148-1a44aa92b75c/go.mod h1:V5/S6VD6E6LUP6WtNsqxFln/XXu4rvKuPDlOdnGfCaE=
 github.com/elmasy-com/identify v1.1.0 h1:RWW4FE+6gRpt9lATAyRojwsDiC/hLgO3B9TDdl98sbA=
 github.com/elmasy-com/identify v1.1.0/go.mod h1:RNwFDjyTfqXDvasuNI/PM4s4M7mmH7SsZfMxUDLQkC4=
 github.com/elmasy-com/slices v0.0.0-20230712174526-6eb4e5e38b73 h1:9I1IZOvF7XurN0VQiUn23i3o7vY6Gm8+RZBK2iEBtpQ=
