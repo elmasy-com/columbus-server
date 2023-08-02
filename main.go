@@ -11,6 +11,7 @@ import (
 	"github.com/elmasy-com/columbus-server/config"
 	"github.com/elmasy-com/columbus-server/db"
 	"github.com/elmasy-com/columbus-server/server"
+	"github.com/elmasy-com/elnet/dns"
 )
 
 var (
@@ -89,6 +90,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to parse config file: %s\n", err)
 		os.Exit(1)
 	}
+
+	// Use common DNS servers
+	dns.UpdateConfCommon()
 
 	fmt.Printf("Connecting to MongoDB...\n")
 	if err := db.Connect(config.MongoURI); err != nil {
