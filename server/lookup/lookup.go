@@ -1,4 +1,4 @@
-package server
+package lookup
 
 import (
 	"errors"
@@ -30,7 +30,7 @@ func getQueryDays(c *gin.Context) (int, error) {
 	return strconv.Atoi(daysStr)
 }
 
-func LookupGet(c *gin.Context) {
+func GetApiLookup(c *gin.Context) {
 
 	var err error
 
@@ -110,7 +110,7 @@ func LookupGet(c *gin.Context) {
 	}
 }
 
-func TLDGet(c *gin.Context) {
+func GetApiTLD(c *gin.Context) {
 
 	dom := c.Param("domain")
 
@@ -158,7 +158,7 @@ func TLDGet(c *gin.Context) {
 	}
 }
 
-func StartsGet(c *gin.Context) {
+func GetApiStarts(c *gin.Context) {
 
 	dom := c.Param("domain")
 
@@ -212,7 +212,7 @@ func StartsGet(c *gin.Context) {
 	}
 }
 
-func HistoryGet(c *gin.Context) {
+func GetApiHistory(c *gin.Context) {
 
 	var err error
 

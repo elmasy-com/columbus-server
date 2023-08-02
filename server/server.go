@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/elmasy-com/columbus-server/config"
+	"github.com/elmasy-com/columbus-server/server/lookup"
 	"github.com/elmasy-com/columbus-server/server/stat"
 
 	"github.com/gin-gonic/gin"
@@ -53,10 +54,10 @@ func Run() error {
 
 	router.SetTrustedProxies(config.TrustedProxies)
 
-	router.GET("/api/lookup/:domain", LookupGet)
-	router.GET("/api/starts/:domain", StartsGet)
-	router.GET("/api/tld/:domain", TLDGet)
-	router.GET("/api/history/:domain", HistoryGet)
+	router.GET("/api/lookup/:domain", lookup.GetApiLookup)
+	router.GET("/api/starts/:domain", lookup.GetApiStarts)
+	router.GET("/api/tld/:domain", lookup.GetApiTLD)
+	router.GET("/api/history/:domain", lookup.GetApiHistory)
 
 	// router.PUT("/insert/:domain", InsertPut)
 
