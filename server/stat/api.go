@@ -1,4 +1,4 @@
-package server
+package stat
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func StatGet(c *gin.Context) {
+func GetApiStat(c *gin.Context) {
 
 	s, err := db.StatisticsGetNewest()
 	if err != nil {

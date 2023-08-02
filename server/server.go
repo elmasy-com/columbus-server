@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/elmasy-com/columbus-server/config"
+	"github.com/elmasy-com/columbus-server/server/stat"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -58,7 +60,8 @@ func Run() error {
 
 	// router.PUT("/insert/:domain", InsertPut)
 
-	router.GET("/api/stat", StatGet)
+	router.GET("/api/stat", stat.GetApiStat)
+	router.GET("/stat", stat.GetStat)
 
 	router.GET("/api/tools/tld/:fqdn", ToolsTLDGet)
 	router.GET("/api/tools/domain/:fqdn", ToolsDomainGet)
@@ -68,7 +71,6 @@ func Run() error {
 	// Permanent Redirect
 	router.GET("/lookup/:domain", Redirect)
 	router.GET("/tld/:domain", Redirect)
-	router.GET("/stat", Redirect)
 	router.GET("/tools/tld/:fqdn", Redirect)
 	router.GET("/tools/domain/:fqdn", Redirect)
 	router.GET("/tools/subdomain/:fqdn", Redirect)
