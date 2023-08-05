@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	MaxStatisticsEntry = 100
+	MaxStatisticsEntry = 500
 )
 
 // StatisticsCountTotal returns the total number of entries in "domain" collection.
@@ -112,7 +112,7 @@ func StatisticsCleanWorker() {
 
 		i := 0
 
-		cursor, err := Statistics.Find(context.TODO(), bson.M{})
+		cursor, err := Statistics.Find(context.TODO(), bson.M{}, options.Find().SetSort(bson.M{"date": -1}))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "StatisticsRemoveOldEntries(): Failed to find statistic entries: %s\n", err)
 			continue
