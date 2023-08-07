@@ -96,7 +96,7 @@ func StatisticsInsertWorker() {
 // The errors are printed to STDERR.
 func StatisticsCleanWorker() {
 
-	t := time.Tick(60 * time.Second)
+	t := time.Tick(300 * time.Second)
 
 	for range t {
 
