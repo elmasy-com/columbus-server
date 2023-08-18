@@ -1,6 +1,10 @@
 # Columbus server
 
+## This repository is deprecated!
+
 :bangbang: The server component is moved to [https://github.com/elmasy-com/columbus](https://github.com/elmasy-com/columbus).
+
+-----
 
 Columbus Project is an API first subdomain discovery service, blazingly fast subdomain enumeration service with advanced features. 
 
