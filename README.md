@@ -1,5 +1,7 @@
 # Columbus server
 
+:bangbang: The server component is moved to [https://github.com/elmasy-com/columbus](https://github.com/elmasy-com/columbus).
+
 Columbus Project is an API first subdomain discovery service, blazingly fast subdomain enumeration service with advanced features. 
 
 ![Subdomain Lookup](https://columbus.elmasy.com/gif/lookup.gif)
